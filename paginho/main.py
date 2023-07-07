@@ -22,9 +22,10 @@ def get_db():
 async def root():
     return {"message": "Hello World"}
 
-
+@app.get("/users")
+async def get_user(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_user(db, skip, limit)
 
 @app.post("/users")
 async def create_user(request: UserSchema, db: Session = Depends(get_db)):
-    crud.create_user(db, user=request)
-    return
+    return crud.create_user(db, user=request)
