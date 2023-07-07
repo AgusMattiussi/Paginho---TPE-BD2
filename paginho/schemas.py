@@ -63,3 +63,12 @@ class TransactionsPostSchema(BaseModel): # POST /transactions
 
     class Config:
         orm_mode = True
+
+
+class TestSchema(BaseModel): # POST /transactions
+    cbu1: str = None
+    cbu2: str = None
+    amount: float = None
+    
+    class Config:
+        orm_mode = True

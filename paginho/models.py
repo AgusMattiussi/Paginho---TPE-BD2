@@ -3,6 +3,7 @@ from sqlalchemy import Column, ForeignKey, Integer, TEXT, CHAR, TIMESTAMP, DECIM
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from fastapi import Depends
+from datetime import datetime
 
 shouldInsertFEInfo = not inspector.has_table('FinancialEntity')
 
@@ -26,7 +27,7 @@ class LinkedEntity(Base):
     cbu = Column("CBU", CHAR(22), primary_key=True, nullable=False, unique=True)
     key = Column("Key", TEXT, primary_key=True, nullable=False)
     entityId = Column("EntityID", Integer, ForeignKey("FinancialEntity.EntityID"), nullable=False)
-    userID = Column("UserID", Integer, ForeignKey("User.UserID"), nullable=False)
+    userId = Column("UserID", Integer, ForeignKey("User.UserID"), nullable=False)
 
 class Transaction(Base):
     __tablename__ = 'Transaction'
@@ -40,18 +41,23 @@ Base.metadata.create_all(engine)
 
 if(shouldInsertFEInfo):
     db = SessionLocal()
-    entities = [] 
+    toInsert = [] 
 
-    entities.append(FinancialEntity(id=11, name="Banco de la Nación Argentina"))
-    entities.append(FinancialEntity(id=14, name="Banco de la Provincia de Buenos Aires"))
-    entities.append(FinancialEntity(id=15, name="Industrial and Commercial Bank of China S.A."))
-    entities.append(FinancialEntity(id=17, name="BBvA Banco Francés S.A."))
+    toInsert.append(FinancialEntity(id=11, name="Banco de la Nación Argentina"))
+    toInsert.append(FinancialEntity(id=14, name="Banco de la Provincia de Buenos Aires"))
+    toInsert.append(FinancialEntity(id=15, name="Industrial and Commercial Bank of China S.A."))
+    toInsert.append(FinancialEntity(id=17, name="BBvA Banco Francés S.A."))
 
-    for entity in entities:
-        db.add(entity)
+    toInsert.append(User(email="jsasso@itba.edu.ar", name="Julian Sasso", password="pass123", cuit="20-43036619-0", phoneNumber = "+54 011 3932-3701"))
+    
+    toInsert.append(LinkedEntity(cbu="01702046600000087865", key="potato", entityId=15, userId=1))
 
-    db.commit()
+    for i in toInsert:
+        db.add(i)
+        db.commit()
 
-    for entity in entities:
-        db.refresh(entity)
+    
+
+    for i in toInsert:
+        db.refresh(i)
     
