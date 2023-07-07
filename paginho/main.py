@@ -6,10 +6,12 @@ from database import SessionLocal, get_db
 from sqlalchemy.orm import Session
 from schemas import UserSchema, TestSchema
 import crud
+import routesUsers, routesLinkedAccounts
 
 app = FastAPI()
 
 app.include_router(routesUsers.router, prefix="/users", tags=["users"])
+app.include_router(routesLinkedAccounts.router, prefix="/linkedAccounts", tags=["linkedAccounts"])
 
 @app.get("/")
 async def root():
