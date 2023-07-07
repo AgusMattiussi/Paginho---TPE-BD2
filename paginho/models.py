@@ -1,8 +1,10 @@
-from database import Base, engine
+from database import Base, engine, inspector, get_db, SessionLocal
 from sqlalchemy import Column, ForeignKey, Integer, TEXT, CHAR, TIMESTAMP, DECIMAL
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from fastapi import Depends
 
+shouldInsertFEInfo = not inspector.has_table('FinancialEntity')
 
 
 class User(Base):
@@ -35,3 +37,21 @@ class Transaction(Base):
 
 
 Base.metadata.create_all(engine)
+
+if(shouldInsertFEInfo):
+    db = SessionLocal()
+    entities = [] 
+
+    entities.append(FinancialEntity(id=11, name="Banco de la Nación Argentina"))
+    entities.append(FinancialEntity(id=14, name="Banco de la Provincia de Buenos Aires"))
+    entities.append(FinancialEntity(id=15, name="Industrial and Commercial Bank of China S.A."))
+    entities.append(FinancialEntity(id=17, name="BBvA Banco Francés S.A."))
+
+    for entity in entities:
+        db.add(entity)
+
+    db.commit()
+
+    for entity in entities:
+        db.refresh(entity)
+    

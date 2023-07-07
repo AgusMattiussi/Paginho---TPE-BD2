@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 from models import User
-from database import SessionLocal
+from database import SessionLocal, get_db
 #from paginhoApi import router
 from schemas import UserSchema
 import crud
@@ -11,12 +11,7 @@ router = APIRouter()
 
 app.include_router(router, prefix="/users", tags=["users"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
 
 @app.get("/")
 async def root():
