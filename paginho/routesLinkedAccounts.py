@@ -22,7 +22,7 @@ async def create_linked_account(request: LinkedAccountsPostSchema, db: Session =
 # PUT /linkedAccounts/{cbu}
 @router.put("/{cbu}")
 async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: Session = Depends(get_db)):
-    return crud.modify_linked_entity(cbu, db, user=request)
+    return crud.modify_linked_account(cbu, db, user=request)
 
 # GET /linkedAccounts/{cbu}
 # TODO:

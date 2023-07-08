@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, inspect, Column, ForeignKey, Integer, TEXT, CHAR, VARCHAR, TIMESTAMP, DECIMAL
+from sqlalchemy import create_engine, inspect, Column, ForeignKey, Integer, TEXT, CHAR, VARCHAR, TIMESTAMP, DECIMAL, ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from config import settings
@@ -34,8 +34,8 @@ class FinancialEntity(Base):
 
 class LinkedEntity(Base):
     __tablename__ = 'LinkedEntity'
-    cbu = Column("CBU", CHAR(22), primary_key=True, nullable=False, unique=True)
-    key = Column("Key", TEXT, primary_key=True, nullable=False)
+    cbu = Column("CBU", CHAR(22), primary_key=True, nullable=False)
+    key = Column("Key", ARRAY(TEXT))
     entityId = Column("EntityID", CHAR(3), ForeignKey("FinancialEntity.EntityID"), nullable=False)
     userId = Column("UserID", Integer, ForeignKey("User.UserID"), nullable=False)
 
@@ -66,7 +66,7 @@ def _populate_db():
 
     toInsert.append(User(email="jsasso@itba.edu.ar", name="Julian Sasso", password="pass123", cuit="20-43036619-0", phoneNumber = "+54 011 3932-3701"))
     
-    toInsert.append(LinkedEntity(cbu="0110590940090418135201", key="potato", entityId="015", userId=1))
+    toInsert.append(LinkedEntity(cbu="0110590940090418135201", key=["potato"], entityId="015", userId=1))
 
     for i in toInsert:
         db.add(i)
