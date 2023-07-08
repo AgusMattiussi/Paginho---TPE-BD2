@@ -9,12 +9,12 @@ CBU_LENGTH = 22
 
 # User 
 #TODO: Validar que los campos tengan el formato correcto
-def create_user(db: Session, user: PostUserSchema):
-    _user = User(email=user.email,
-                name=user.name, 
-                password=user.password, 
-                cuit=user.cuit, 
-                phoneNumber=user.phoneNumber)
+def create_user(db: Session, email:str, name:str, password:str, cuit:str, phoneNumber:str):
+    _user = User(email=email,
+                name=name, 
+                password=password, 
+                cuit=cuit, 
+                phoneNumber=phoneNumber)
     try:
         db.add(_user)
         db.commit()
@@ -32,6 +32,13 @@ def get_user(db: Session, skip: int = 0, limit: int = 100):
 def get_user_by_cbu(db: Session, cbu: str):
     return db.query(User).join(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
     
+#TODO: Hashear password
+def validate_user(db: Session, email: str, password: str):
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        return user.password == password
+    return False
+
 
 # LinkedEntity
 def get_linked_entities(db: Session, user: BasicAuthSchema):

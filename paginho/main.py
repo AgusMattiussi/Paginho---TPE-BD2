@@ -1,8 +1,4 @@
-from fastapi import FastAPI, Depends
-from pgDatabase import get_db
-from sqlalchemy.orm import Session
-from schemas import TestSchema
-import crud
+from fastapi import FastAPI
 import routesUsers, routesLinkedAccounts, routesTransactions
 
 app = FastAPI()
