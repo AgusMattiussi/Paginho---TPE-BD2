@@ -53,7 +53,16 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # GET /linkedAccounts/{cbu}
-# TODO:
-@router.get("/{CBU}")
-async def get_linked_account(request: BasicAuthSchema, db: Session = Depends(get_db)):
-    return {"message" : "To be implemented"}
+@router.get("/{cbu}")
+async def get_keys_for_linked_account(cbu: str, request: BasicAuthSchema, db: Session = Depends(get_db)):
+    if len(cbu) != CBU_LENGTH:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="CBU length must be 22 characters")
+    
+    try:
+        linkedAccounts = crud.get_keys_for_linked_account(cbu, db, user=request)
+        if linkedAccounts:
+            return linkedAccounts
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Linked account not found")
+    except SQLAlchemyError as error:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
