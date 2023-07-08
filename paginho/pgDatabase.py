@@ -66,7 +66,7 @@ def _populate_db():
 
     toInsert.append(User(email="jsasso@itba.edu.ar", name="Julian Sasso", password="pass123", cuit="20-43036619-0", phoneNumber = "+54 011 3932-3701"))
     
-    toInsert.append(LinkedEntity(cbu="0110590940090418135201", key=["potato"], entityId="015", userId=1))
+    toInsert.append(LinkedEntity(cbu="0110590940090418135201", key=["potato"], entityId="011", userId=1))
 
     for i in toInsert:
         db.add(i)

@@ -57,11 +57,8 @@ def get_linked_entities(db: Session, user: BasicAuthSchema):
 
     return results
 
+# TODO: Agregar error si el CBU no existe
 def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
-    # Verificar validez del CBU
-    if(len(user.cbu) != CBU_LENGTH):
-        return {"Error" : "El CBU no es válido"}
-
     # Verificar que no supere el limite de vinculaciones por cuenta
     if(db.query(LinkedEntity).join(User).filter(User.email == user.email).count() > 10):
         return {"Error" : "Se superó el límite de vinculaciones para esta cuenta"}
@@ -75,20 +72,28 @@ def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
     userId = db.query(User.id).filter(User.email == user.email).first()[0]	
 
     # Buscar el banco asociado al CBU en la tabla FinancialEntity
-    entityId = db.query(FinancialEntity.id).filter(FinancialEntity.id == cbu[:3]).first()[0]
+    entity = db.query(FinancialEntity).filter(FinancialEntity.id == cbu[:3]).first()
 
     # Insertar nueva tupla en LinkedEntity
-    _linkedEntity = LinkedEntity(cbu=cbu, key=None, entityId=entityId, userId=userId)
-    db.add(_linkedEntity)
-    db.commit()
-    db.refresh(_linkedEntity)
-    return _linkedEntity
+    _linkedEntity = LinkedEntity(cbu=cbu, key=None, entityId=entity.id, userId=userId)
 
-def modify_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):
-    # Verificar validez del CBU
-    if(len(cbu) != CBU_LENGTH):
-        return {"Error" : "El CBU no es válido"}
+    try:
+        db.add(_linkedEntity)
+        db.commit()
+        db.refresh(_linkedEntity)
+    except IntegrityError as error:
+        raise error
+    except SQLAlchemyError as error:
+        raise error
     
+    result = {
+        "cbu": cbu,
+        "bank": entity.name,
+        "key": None
+    }
+    return result    
+
+def modify_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):  
     # Verificar que no supere el limite de vinculaciones por cuenta
     if(db.query(LinkedEntity).join(User).filter(User.email == user.email).count() > 10):
         return {"Error" : "Se superó el límite de vinculaciones para esta cuenta"}
@@ -122,9 +127,20 @@ def modify_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):
         linkedEntity.key.append(newKey)
     
     # Modificar la tupla
-    db.query(LinkedEntity).filter(LinkedEntity.cbu == cbu).update({'key': linkedEntity.key})
-    db.commit()
-    return linkedEntity
+    try:
+        db.query(LinkedEntity).filter(LinkedEntity.cbu == cbu).update({'key': linkedEntity.key})
+        db.commit()
+    except IntegrityError as error:
+        raise error
+    except SQLAlchemyError as error:
+        raise error
+    
+    result = {
+        "cbu": cbu,
+        "bank": entity.name,
+        "key": linkedEntity.key
+    }
+    return result
 
 
 # Transactions
