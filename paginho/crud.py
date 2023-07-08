@@ -6,6 +6,7 @@ from schemas import UserSchema
 
 from datetime import datetime
 
+CBU_LENGTH = 22
 
 # User
 def create_user(db: Session, user: UserSchema):
@@ -45,7 +46,7 @@ def get_linked_entities(db: Session, user: BasicAuthSchema):
 
 def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
     # Verificar validez del CBU
-    if(len(user.cbu) != 22):
+    if(len(user.cbu) != CBU_LENGTH):
         return {"Error" : "El CBU no es válido"}
 
     # Verificar que no supere el limite de vinculaciones por cuenta
@@ -61,8 +62,7 @@ def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
     userId = db.query(User.id).filter(User.email == user.email).first()[0]	
 
     # Buscar el banco asociado al CBU en la tabla FinancialEntity
-    # entityId = db.query(FinancialEntity.id).join(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()[0]
-    entityId = 11 #TODO: Revisar como diferenciar entre bancos en base al CBU
+    entityId = db.query(FinancialEntity.id).filter(FinancialEntity.id == cbu[:3]).first()[0]
 
     # Insertar nueva tupla en LinkedEntity -> Key = "NO_KEY"
     _linkedEntity = LinkedEntity(cbu=cbu, key="NO_KEY", entityId=entityId, userId=userId)

@@ -29,14 +29,14 @@ class User(Base):
 
 class FinancialEntity(Base):
     __tablename__ = 'FinancialEntity'
-    id = Column("EntityID", Integer, primary_key=True, nullable=False, autoincrement=False, unique=True)
+    id = Column("EntityID", CHAR(3), primary_key=True, nullable=False, autoincrement=False, unique=True)
     name = Column("Name", TEXT, nullable=False, unique=True)
 
 class LinkedEntity(Base):
     __tablename__ = 'LinkedEntity'
     cbu = Column("CBU", CHAR(22), primary_key=True, nullable=False, unique=True)
     key = Column("Key", TEXT, primary_key=True, nullable=False)
-    entityId = Column("EntityID", Integer, ForeignKey("FinancialEntity.EntityID"), nullable=False)
+    entityId = Column("EntityID", CHAR(3), ForeignKey("FinancialEntity.EntityID"), nullable=False)
     userId = Column("UserID", Integer, ForeignKey("User.UserID"), nullable=False)
 
 class Transaction(Base):
@@ -44,7 +44,7 @@ class Transaction(Base):
     time = Column("Time", TIMESTAMP, primary_key=True, nullable=False)
     cbuFrom = Column("CBU1", CHAR(22), ForeignKey("LinkedEntity.CBU"), primary_key=True, nullable=False)
     cbuTo = Column("CBU2", CHAR(22), ForeignKey("LinkedEntity.CBU"), primary_key=True, nullable=False)
-    amount = Column("UserID", DECIMAL(12,2), nullable=False)
+    amount = Column("Amount", DECIMAL(12,2), nullable=False)
 
 
 def get_db():
@@ -59,14 +59,14 @@ def _populate_db():
     db = SessionLocal()
     toInsert = [] 
 
-    toInsert.append(FinancialEntity(id=11, name="Banco de la Nación Argentina"))
-    toInsert.append(FinancialEntity(id=14, name="Banco de la Provincia de Buenos Aires"))
-    toInsert.append(FinancialEntity(id=15, name="Industrial and Commercial Bank of China S.A."))
-    toInsert.append(FinancialEntity(id=17, name="BBvA Banco Francés S.A."))
+    toInsert.append(FinancialEntity(id="011", name="Banco de la Nación Argentina"))
+    toInsert.append(FinancialEntity(id="014", name="Banco de la Provincia de Buenos Aires"))
+    toInsert.append(FinancialEntity(id="015", name="Industrial and Commercial Bank of China S.A."))
+    toInsert.append(FinancialEntity(id="017", name="BBvA Banco Francés S.A."))
 
     toInsert.append(User(email="jsasso@itba.edu.ar", name="Julian Sasso", password="pass123", cuit="20-43036619-0", phoneNumber = "+54 011 3932-3701"))
     
-    toInsert.append(LinkedEntity(cbu="2850590940090418135201", key="potato", entityId=15, userId=1))
+    toInsert.append(LinkedEntity(cbu="0110590940090418135201", key="potato", entityId="015", userId=1))
 
     for i in toInsert:
         db.add(i)
