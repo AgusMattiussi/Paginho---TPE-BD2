@@ -15,7 +15,7 @@ router = APIRouter()
 async def get_linked_accounts(request: BasicAuthSchema, db: Session = Depends(get_db)): 
     if not crud.validate_user(db, request.email, request.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-     
+
     try:
         linkedAccounts = crud.get_linked_entities(db, user=request)
         if linkedAccounts:

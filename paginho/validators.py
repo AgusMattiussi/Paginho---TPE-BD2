@@ -18,12 +18,23 @@ def validate_phone_number(phoneNumber:str):
     except phonenumbers.phonenumberutil.NumberParseException:
         return False
 
-cuitRegex = r'^(20|23|27|30|33)([0-9]{9}|-[0-9]{8}-[0-9]{1})$'
-
 def validate_cuit(cuit:str):
     cuitPattern = r'^(20|23|27|30|33)([0-9]{9}|-[0-9]{8}-[0-9]{1})$'
     return re.match(cuitPattern, cuit)
 
+def validate_cbu(cbu:str):
+    # Expresión regular para validar el formato del CBU
+    cbuPattern = r'^\d{22}$'
+    
+    if not re.match(cbuPattern, cbu):
+        return False
+    
+    cbuAsNum = [int(d) for d in cbu]
+    pesos = [7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1]
+    resultado = sum(peso * digito for peso, digito in zip(pesos, cbuAsNum))
+    
+    return resultado % 10 == 0
+    
 
 def validate_alias_key(key:str):
     aliasPattern = r'[A-Za-z\.-]{5,50}' # Key length: [5, 50]
