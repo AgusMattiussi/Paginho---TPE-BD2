@@ -5,7 +5,7 @@ from schemas import PostUserSchema, BasicAuthSchema, LinkedAccountsPostSchema
 from psycopg2.errors import UniqueViolation
 from datetime import datetime
 
-
+CBU_LENGTH = 22
 
 # User 
 #TODO: Validar que los campos tengan el formato correcto
@@ -35,21 +35,40 @@ def get_user_by_cbu(db: Session, cbu: str):
 
 # LinkedEntity
 def get_linked_entities(db: Session, user: BasicAuthSchema):
-    return db.query(LinkedEntity.cbu, FinancialEntity.name, LinkedEntity.key).join(User, LinkedEntity.userID == User.id).join(FinancialEntity, LinkedEntity.entityId == FinancialEntity.id).filter(User.email == user.email, User.password == user.password).all()
+    result = db.query(LinkedEntity.cbu, FinancialEntity.name, LinkedEntity.key)\
+        .join(User, LinkedEntity.userId == User.id)\
+            .join(FinancialEntity, LinkedEntity.entityId == FinancialEntity.id)\
+                .filter(User.email == user.email, User.password == user.password).all()
+    results = []
+    for row in result:
+        entity_dict = {
+            "cbu": row[0],
+            "name": row[1],
+            "key": row[2]
+        }
+        results.append(entity_dict)
+
+    return results
 
 def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
-    # Verificar que no supere el limite de vinculaciones
-    if(db.query(LinkedEntity).join(User, LinkedEntity.userID == User.id).filter(User.email == user.email).count() > 4):
-        return "Error: Se superó el límite de vinculaciones"
+    # Verificar validez del CBU
+    if(len(user.cbu) != CBU_LENGTH):
+        return {"Error" : "El CBU no es válido"}
+
+    # Verificar que no supere el limite de vinculaciones por cuenta
+    if(db.query(LinkedEntity).join(User).filter(User.email == user.email).count() > 10):
+        return {"Error" : "Se superó el límite de vinculaciones para esta cuenta"}
+    
+    # Verificar que no supere el limite de vinculaciones por entidad financiera
+    if(db.query(LinkedEntity).filter(user.cbu == LinkedEntity.cbu).count() > 5):
+        return {"Error" : "Se superó el límite de vinculaciones para este CBU"}
 
     # Buscar el dueño del CBU en la tabla User
     cbu = user.cbu
-    userId = db.query(User.id).join(LinkedEntity, LinkedEntity.userID == User.id).filter(LinkedEntity.cbu == cbu).first()[0]	
+    userId = db.query(User.id).filter(User.email == user.email).first()[0]	
 
     # Buscar el banco asociado al CBU en la tabla FinancialEntity
-    entityId = db.query(FinancialEntity.id).join(LinkedEntity, LinkedEntity.entityId == FinancialEntity.id).filter(LinkedEntity.cbu == cbu).first()[0]
-    
-    # Verificar validez del CBU?
+    entityId = db.query(FinancialEntity.id).filter(FinancialEntity.id == cbu[:3]).first()[0]
 
     # Insertar nueva tupla en LinkedEntity -> Key = "NO_KEY"
     _linkedEntity = LinkedEntity(cbu=cbu, key="NO_KEY", entityId=entityId, userId=userId)
