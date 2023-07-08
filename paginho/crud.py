@@ -57,7 +57,6 @@ def get_linked_entities(db: Session, user: BasicAuthSchema):
 
     return results
 
-# TODO: Agregar error si el CBU no existe
 def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
     # Verificar que no supere el limite de vinculaciones por cuenta
     if(db.query(LinkedEntity).join(User).filter(User.email == user.email).count() > 10):
@@ -142,6 +141,20 @@ def modify_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):
     }
     return result
 
+def get_keys_for_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):  
+    result = db.query(FinancialEntity.name, LinkedEntity.key)\
+            .join(FinancialEntity)\
+                .filter(LinkedEntity.cbu == cbu, FinancialEntity.id == cbu[:3]).all()
+    results = []
+    for row in result:
+        entity_dict = {
+            "cbu": cbu,
+            "name": row[0],
+            "key": row[1]
+        }
+        results.append(entity_dict)
+
+    return results
 
 # Transactions
 def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
