@@ -1,28 +1,34 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from pgDatabase import User, LinkedEntity, FinancialEntity, Transaction
-from schemas import UserSchema, BasicAuthSchema, LinkedAccountsPostSchema, LinkedAccountsPutSchema
-from schemas import UserSchema
-
+from schemas import PostUserSchema, BasicAuthSchema, LinkedAccountsPostSchema, LinkedAccountsPutSchema
+from psycopg2.errors import UniqueViolation
 from datetime import datetime
 
 CBU_LENGTH = 22
 
-# User
-def create_user(db: Session, user: UserSchema):
+# User 
+#TODO: Validar que los campos tengan el formato correcto
+def create_user(db: Session, user: PostUserSchema):
     _user = User(email=user.email,
                 name=user.name, 
                 password=user.password, 
                 cuit=user.cuit, 
                 phoneNumber=user.phoneNumber)
-    db.add(_user)
-    db.commit()
-    db.refresh(_user)
+    try:
+        db.add(_user)
+        db.commit()
+        db.refresh(_user)
+    except IntegrityError as error:
+        raise error
+    except SQLAlchemyError as error:
+        raise error
     return _user
 
 def get_user(db: Session, skip: int = 0, limit: int = 100):
     return db.query(User).offset(skip).limit(limit).all()
 
+#TODO: Validar que los campos tengan el formato correcto
 def get_user_by_cbu(db: Session, cbu: str):
     return db.query(User).join(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
     
