@@ -9,7 +9,7 @@ _ARGENTINA_COUNTRY_CODE = "AR"
 
 def validate_email(email:str):
     emailPattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-    return re.match(emailPattern, email) & len(email) <= _MAX_EMAIL_LENGTH
+    return bool(re.match(emailPattern, email)) and len(email) <= _MAX_EMAIL_LENGTH
 
 def validate_phone_number(phoneNumber:str):
     try:
@@ -20,32 +20,30 @@ def validate_phone_number(phoneNumber:str):
 
 def validate_cuit(cuit:str):
     cuitPattern = r'^(20|23|27|30|33)([0-9]{9}|-[0-9]{8}-[0-9]{1})$'
-    return re.match(cuitPattern, cuit)
+    return bool(re.match(cuitPattern, cuit))
 
 def validate_cbu(cbu:str):
     # Expresión regular para validar el formato del CBU
     cbuPattern = r'^\d{22}$'
-    
-    if not re.match(cbuPattern, cbu):
-        return False
-    
-    cbuAsNum = [int(d) for d in cbu]
-    pesos = [7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1, 3, 9, 7, 1]
-    resultado = sum(peso * digito for peso, digito in zip(pesos, cbuAsNum))
-    
-    return resultado % 10 == 0
-    
+    return bool(re.match(cbuPattern, cbu))
 
+
+
+def validate_amount(amount:float):
+    # Validate float decimals count <= 2
+    return amount > 0 and len(str(amount).split('.')[1] or 0) <= 2
+    
+    
 def validate_alias_key(key:str):
     aliasPattern = r'[A-Za-z\.-]{5,50}' # Key length: [5, 50]
-    return re.match(aliasPattern, key)
+    return bool(re.match(aliasPattern, key))
 
 def validate_key_selection(key:str):
     emailPattern = r'[Ee][Mm][Aa][Ii][Ll]'
     phonePattern = r'[Pp][Hh][Oo][Nn][Ee]'
     cuitPattern = r'[Cc][Uu][Ii][Tt]'
     
-    return  re.match(emailPattern, key) | \
-            re.match(phonePattern, key) | \
-            re.match(cuitPattern, key) | \
+    return  bool(re.match(emailPattern, key)) or \
+            bool(re.match(phonePattern, key)) or \
+            bool(re.match(cuitPattern, key)) or \
             validate_alias_key(key)

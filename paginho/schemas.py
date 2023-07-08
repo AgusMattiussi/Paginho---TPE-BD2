@@ -10,8 +10,8 @@ class PostUserSchema(BaseModel): # POST /users
     phoneNumber: str = None
 
     def is_valid(self):
-        return validators.validate_email(self.email) & \
-                validators.validate_cuit(self.cuit) & \
+        return  validators.validate_email(self.email) and \
+                validators.validate_cuit(self.cuit) and \
                 validators.validate_phone_number(self.phoneNumber)
 
     class Config:
@@ -64,7 +64,7 @@ class LinkedAccountsPostSchema(BaseModel): # POST /linkedAccounts
     cbu: str = None
 
     def is_valid(self):
-        return  validators.validate_email(self.email) & \
+        return  validators.validate_email(self.email) and \
                 validators.validate_cbu(self.cbu)
 
     class Config:
@@ -77,7 +77,7 @@ class LinkedAccountsPutSchema(BaseModel): # PUT /linkedAccounts/{cbu}
     key: str = None
     
     def is_valid(self):
-        return  validators.validate_email(self.email) & \
+        return  validators.validate_email(self.email) and \
                 validators.validate_key_selection(self.key)
 
     class Config:
@@ -104,9 +104,10 @@ class PostTransactionSchema(BaseModel): # POST /transactions
     amount: float = None
 
     def is_valid(self):
-        return  validators.validate_email(self.email) & \
-                validators.validate_cbu(self.cbu) & \
-                validators.validate_alias_key(self.key)
+        return  validators.validate_email(self.email) and \
+                validators.validate_cbu(self.cbu) and \
+                validators.validate_alias_key(self.key) and \
+                validators.validate_amount(self.amount)
     
     class Config:
         orm_mode = True
