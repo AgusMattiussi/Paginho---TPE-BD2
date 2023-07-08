@@ -8,6 +8,7 @@ import crud
 
 router = APIRouter()
 
+
 # GET /linkedAccounts
 @router.get("/")
 async def get_linked_accounts(request: BasicAuthSchema, db: Session = Depends(get_db)):

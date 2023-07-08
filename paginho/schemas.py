@@ -4,13 +4,18 @@ from pydantic import BaseModel
 class UserSchema(BaseModel): # POST /users
     email: str = None
     name: str = None
-    password: str = None
+    #password: str = None
     cuit: str = None
-    phoneNumber: str = None
+    telephone: str = None
 
     class Config:
         orm_mode = True
 
+class GetUserSchema(BaseModel):
+    cbu: str = None
+
+    class Config:
+        orm_mode = True
 
 class LinkedUserSchema(BaseModel): # GET /users
     cbu: str = None
