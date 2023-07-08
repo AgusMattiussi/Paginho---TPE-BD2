@@ -1,8 +1,6 @@
-from sqlalchemy import TIMESTAMP
 from sqlalchemy.orm import Session
-from models import User, LinkedEntity, FinancialEntity
+from pgDatabase import User, LinkedEntity, FinancialEntity, Transaction
 from schemas import UserSchema, BasicAuthSchema, LinkedAccountsPostSchema
-from models import User, Transaction
 from schemas import UserSchema
 
 from datetime import datetime

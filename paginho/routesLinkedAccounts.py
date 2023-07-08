@@ -1,12 +1,17 @@
 from fastapi import APIRouter
 from fastapi import Depends
-from database import get_db
+from pgDatabase import get_db
 from sqlalchemy.orm import Session
 from schemas import BasicAuthSchema, LinkedAccountsPostSchema, LinkedAccountsPutSchema
 
 import crud
 
 router = APIRouter()
+
+# GET /linkedAccounts
+# POST /linkedAccounts
+# PUT /linkedAccounts/{cbu}
+# GET /linkedAccounts/{cbu}
 
 @router.get("/")
 async def get_linked_accounts(request: BasicAuthSchema, db: Session = Depends(get_db)):
