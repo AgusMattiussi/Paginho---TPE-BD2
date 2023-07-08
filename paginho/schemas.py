@@ -70,20 +70,11 @@ class TransactionsGetSchema(BaseModel): # GET /transactions
         orm_mode = True
 
 
-class TransactionsPostSchema(BaseModel): # POST /transactions
+class PostTransactionSchema(BaseModel): # POST /transactions
     email: str = None
     password: str = None
     cbu: str = None
     key: str = None
-    amount: float = None
-
-    class Config:
-        orm_mode = True
-
-
-class TestSchema(BaseModel): # POST /transactions
-    cbu1: str = None
-    cbu2: str = None
     amount: float = None
     
     class Config:

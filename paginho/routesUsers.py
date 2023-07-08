@@ -3,7 +3,7 @@ from pgDatabase import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from psycopg2.errors import UniqueViolation
-from schemas import TestSchema, GetUserSchema, UserDTO, PostUserSchema
+from schemas import GetUserSchema, UserDTO, PostUserSchema
 import crud
 
 CBU_LENGTH = 22
@@ -31,7 +31,7 @@ async def get_user(request: GetUserSchema, db: Session = Depends(get_db)):
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(request: PostUserSchema, db: Session = Depends(get_db)):
     try:
-        user = crud.create_user(db, user=request)
+        user = crud.create_user(db, email=request.email, name=request.name, password=request.password, cuit=request.cuit, phoneNumber=request.phoneNumber)
         if user:
             return UserDTO(name=user.name, cuit=user.cuit, email=user.email, telephone=user.phoneNumber)
     except IntegrityError as e:
