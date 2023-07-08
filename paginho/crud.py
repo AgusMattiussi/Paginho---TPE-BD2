@@ -26,10 +26,6 @@ def get_user_by_cbu(db: Session, cbu: str):
     return db.query(User).join(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
     
 
-    
-
-
-
 # LinkedEntity
 def get_linked_entities(db: Session, user: BasicAuthSchema):
     result = db.query(LinkedEntity.cbu, FinancialEntity.name, LinkedEntity.key)\
@@ -48,18 +44,25 @@ def get_linked_entities(db: Session, user: BasicAuthSchema):
     return results
 
 def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
-    # Verificar que no supere el limite de vinculaciones
-    if(db.query(LinkedEntity).join(User, LinkedEntity.userID == User.id).filter(User.email == user.email).count() > 4):
-        return "Error: Se superó el límite de vinculaciones"
+    # Verificar validez del CBU
+    if(len(user.cbu) != 22):
+        return {"Error" : "El CBU no es válido"}
+
+    # Verificar que no supere el limite de vinculaciones por cuenta
+    if(db.query(LinkedEntity).join(User).filter(User.email == user.email).count() > 10):
+        return {"Error" : "Se superó el límite de vinculaciones para esta cuenta"}
+    
+    # Verificar que no supere el limite de vinculaciones por entidad financiera
+    if(db.query(LinkedEntity).filter(user.cbu == LinkedEntity.cbu).count() > 5):
+        return {"Error" : "Se superó el límite de vinculaciones para este CBU"}
 
     # Buscar el dueño del CBU en la tabla User
     cbu = user.cbu
-    userId = db.query(User.id).join(LinkedEntity, LinkedEntity.userID == User.id).filter(LinkedEntity.cbu == cbu).first()[0]	
+    userId = db.query(User.id).filter(User.email == user.email).first()[0]	
 
     # Buscar el banco asociado al CBU en la tabla FinancialEntity
-    entityId = db.query(FinancialEntity.id).join(LinkedEntity, LinkedEntity.entityId == FinancialEntity.id).filter(LinkedEntity.cbu == cbu).first()[0]
-    
-    # Verificar validez del CBU?
+    # entityId = db.query(FinancialEntity.id).join(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()[0]
+    entityId = 11 #TODO: Revisar como diferenciar entre bancos en base al CBU
 
     # Insertar nueva tupla en LinkedEntity -> Key = "NO_KEY"
     _linkedEntity = LinkedEntity(cbu=cbu, key="NO_KEY", entityId=entityId, userId=userId)
