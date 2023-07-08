@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends
 from pgDatabase import get_db
 from sqlalchemy.orm import Session
-from schemas import PostTransactionSchema
+from schemas import PostTransactionSchema, GetTransactionSchema
 import crud
 from fastapi import APIRouter, HTTPException, status
 
@@ -10,8 +10,11 @@ router = APIRouter()
 # GET /transactions
 # TODO:
 @router.get("/")
-async def get_transactions(request: None, db: Session = Depends(get_db)):
-    return {"message" : "To be implemented"}
+async def get_transactions(request: GetTransactionSchema, db: Session = Depends(get_db)):
+    if not crud.validate_user(db, request.email, request.password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    return crud.get_transactions_by_email(db, request.email, request.limit)
+    
 
 # POST /transactions
 #TODO: Validar parametros

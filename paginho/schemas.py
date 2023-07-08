@@ -61,10 +61,10 @@ class LinkedAccountsPutSchema(BaseModel): # PUT /linkedAccounts/{cbu}
         orm_mode = True
 
 
-class TransactionsGetSchema(BaseModel): # GET /transactions
+class GetTransactionSchema(BaseModel): # GET /transactions
     email: str = None
     password: str = None
-    limit: int = None
+    limit: int = 10
 
     class Config:
         orm_mode = True
@@ -79,3 +79,4 @@ class PostTransactionSchema(BaseModel): # POST /transactions
     
     class Config:
         orm_mode = True
+

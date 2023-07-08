@@ -164,3 +164,12 @@ def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
     db.commit()
     db.refresh(_transaction)
     return _transaction
+
+#TODO: Validar not found, etc
+def get_transactions_by_email(db: Session, email: str, limit: int):
+    return db.query(Transaction) \
+            .join(LinkedEntity, (Transaction.cbuFrom == LinkedEntity.cbu) | (Transaction.cbuTo == LinkedEntity.cbu)) \
+            .join(User, (LinkedEntity.userId == User.id) & (User.email == email)) \
+            .limit(limit) \
+            .distinct() \
+            .all()
