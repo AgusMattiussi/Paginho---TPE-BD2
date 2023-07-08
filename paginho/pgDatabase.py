@@ -14,6 +14,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush = False, bind=engine)
 Base = declarative_base()
 
 inspector = inspect(engine)
+# Check if database's FinancialEntity table needs to be populated
 shouldInsertFEInfo = not inspector.has_table('FinancialEntity')
 
 
@@ -65,7 +66,7 @@ def _populate_db():
 
     toInsert.append(User(email="jsasso@itba.edu.ar", name="Julian Sasso", password="pass123", cuit="20-43036619-0", phoneNumber = "+54 011 3932-3701"))
     
-    toInsert.append(LinkedEntity(cbu="01702046600000087865", key="potato", entityId=15, userId=1))
+    toInsert.append(LinkedEntity(cbu="2850590940090418135201", key="potato", entityId=15, userId=1))
 
     for i in toInsert:
         db.add(i)

@@ -1,9 +1,12 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from pgDatabase import User, LinkedEntity, FinancialEntity, Transaction
 from schemas import UserSchema, BasicAuthSchema, LinkedAccountsPostSchema
 from schemas import UserSchema
 
 from datetime import datetime
+
+
 
 # User
 def create_user(db: Session, user: UserSchema):
@@ -19,6 +22,13 @@ def create_user(db: Session, user: UserSchema):
 
 def get_user(db: Session, skip: int = 0, limit: int = 100):
     return db.query(User).offset(skip).limit(limit).all()
+
+def get_user_by_cbu(db: Session, cbu: str):
+    return db.query(User).join(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
+    
+
+    
+
 
 
 # LinkedEntity
