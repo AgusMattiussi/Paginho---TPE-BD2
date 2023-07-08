@@ -5,6 +5,8 @@ from schemas import UserSchema
 
 from datetime import datetime
 
+import json
+
 # User
 def create_user(db: Session, user: UserSchema):
     _user = User(email=user.email,
@@ -23,7 +25,20 @@ def get_user(db: Session, skip: int = 0, limit: int = 100):
 
 # LinkedEntity
 def get_linked_entities(db: Session, user: BasicAuthSchema):
-    return db.query(LinkedEntity.cbu, FinancialEntity.name, LinkedEntity.key).join(User, LinkedEntity.userID == User.id).join(FinancialEntity, LinkedEntity.entityId == FinancialEntity.id).filter(User.email == user.email, User.password == user.password).all()
+    result = db.query(LinkedEntity.cbu, FinancialEntity.name, LinkedEntity.key)\
+        .join(User, LinkedEntity.userId == User.id)\
+            .join(FinancialEntity, LinkedEntity.entityId == FinancialEntity.id)\
+                .filter(User.email == user.email, User.password == user.password).all()
+    results = []
+    for row in result:
+        entity_dict = {
+            "cbu": row[0],
+            "name": row[1],
+            "key": row[2]
+        }
+        results.append(entity_dict)
+
+    return results
 
 def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
     # Verificar que no supere el limite de vinculaciones
