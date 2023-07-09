@@ -3,7 +3,7 @@ from fastapi import Depends
 from pgDatabase import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from schemas import BasicAuthSchema, LinkedAccountsPostSchema, LinkedAccountsPutSchema, LinkedAccountDTO
+from schemas import BasicAuthSchema, LinkedAccountsPostSchema, LinkedAccountsPutSchema, LinkedAccountDTO, LinkedAccountListDTO
 import crud, redisDatabase
 
 CBU_LENGTH = 22
@@ -18,14 +18,16 @@ async def get_linked_accounts(request: BasicAuthSchema, db: Session = Depends(ge
     if not crud.validate_user(db, request.email, request.password):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
 
+    linkedAccounts = []
     try:
-        linkedAccounts = crud.get_linked_entities(db, user=request)
-        if linkedAccounts:
-            return linkedAccounts
-        else:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Linked account not found")
+        linkedAccount = crud.get_linked_entities_by_email(db, email=request.email)
     except SQLAlchemyError as error:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    for account in linkedAccount:
+        linkedAccounts.append(LinkedAccountDTO(cbu=account["cbu"], bank=account["name"], keys=account["keys"]))
+
+    return LinkedAccountListDTO(linkedAccounts=linkedAccounts)
 
 # POST /linkedAccounts
 @router.post("/", status_code=status.HTTP_201_CREATED)

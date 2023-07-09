@@ -91,6 +91,12 @@ class LinkedAccountDTO(BaseModel):
     class Config:
         orm_mode = True
 
+class LinkedAccountListDTO(BaseModel): 
+    linkedAccounts: Optional[List[LinkedAccountDTO]] = []
+    
+    class Config:
+        orm_mode = True
+
 class GetTransactionSchema(BaseModel): # GET /transactions
     email: str = None
     password: str = None
