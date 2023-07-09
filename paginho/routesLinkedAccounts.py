@@ -4,7 +4,7 @@ from pgDatabase import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from schemas import BasicAuthSchema, LinkedAccountsPostSchema, LinkedAccountsPutSchema
-import crud
+import crud, redisDatabase
 
 CBU_LENGTH = 22
 
@@ -47,22 +47,30 @@ async def create_linked_account(request: LinkedAccountsPostSchema, db: Session =
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)    
 
 # PUT /linkedAccounts/{cbu}
+# FIXME: CBU?
 @router.put("/{cbu}", status_code=status.HTTP_200_OK)
 async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: Session = Depends(get_db)):
     if not request.is_valid():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more fields is not valid")
     if not crud.validate_user(db, request.email, request.password):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
-    if len(cbu) != CBU_LENGTH:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU length must be 22 characters")
     
+    solvedKey = crud.solve_key(db, request.email, request.key)
+    if not solvedKey:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
+
+    request.key = solvedKey
+
     try:
         linkedAccount = crud.modify_linked_account(cbu, db, user=request)
         if linkedAccount:
-            return linkedAccount
+            if redisDatabase.set_cbu(solvedKey, cbu):
+                return linkedAccount
+            #TODO: Volver atras en LinkedAccounts?
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Key is already in use")
         else:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Linked account not found")
-    except SQLAlchemyError as error:
+    except Exception as error:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # GET /linkedAccounts/{cbu}
@@ -74,12 +82,11 @@ async def get_keys_for_linked_account(cbu: str, request: BasicAuthSchema, db: Se
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
     if len(cbu) != CBU_LENGTH:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU length must be 22 characters")
-    
     try:
         linkedAccounts = crud.get_keys_for_linked_account(cbu, db, user=request)
         if linkedAccounts:
             return linkedAccounts
         else:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Linked account not found")
-    except SQLAlchemyError as error:
+    except Exception as error:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)

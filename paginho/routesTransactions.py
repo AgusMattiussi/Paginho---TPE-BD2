@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from schemas import PostTransactionSchema, GetTransactionSchema
 import crud
 from fastapi import APIRouter, HTTPException, status
+from redisDatabase import get_cbu
 
 router = APIRouter()
 
@@ -25,8 +26,9 @@ async def create_transaction(request: PostTransactionSchema, db: Session = Depen
     if not request.is_valid():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more fields is not valid")
     if not crud.validate_user(db, request.email, request.password):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
-    # TODO: Redis: request.key -> cbuTo
-    cbuTo = "2850590940090418135201"
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    cbuTo = get_cbu(request.key)
+    if not cbuTo:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Key not found")
     # TODO: Resolver transaccion con bancos
     return crud.create_transaction(db, cbuFrom=request.cbu, cbuTo=cbuTo, amount=request.amount)

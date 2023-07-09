@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from psycopg2.errors import UniqueViolation
 from schemas import GetUserSchema, UserDTO, PostUserSchema
 import crud
-import phonenumbers
+from utils import normalizePhoneNumber
 
 CBU_LENGTH = 22
 
@@ -33,7 +33,7 @@ async def get_user(request: GetUserSchema, db: Session = Depends(get_db)):
 async def create_user(request: PostUserSchema, db: Session = Depends(get_db)):
     if not request.is_valid():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more fields is not valid")
-    formattedPhoneNumber = phonenumbers.format_number(phonenumbers.parse(request.phoneNumber, "AR"), phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+    formattedPhoneNumber = normalizePhoneNumber(request.phoneNumber)
     
     try:
         user = crud.create_user(db, email=request.email, name=request.name, password=request.password, cuit=request.cuit, phoneNumber=formattedPhoneNumber)

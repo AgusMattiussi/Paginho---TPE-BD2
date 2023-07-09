@@ -92,13 +92,15 @@ def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
     }
     return result    
 
+#TODO: Validar casos donde no se encuentre el banco, etc
 def modify_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):  
     # Verificar que no supere el limite de vinculaciones por cuenta
-    if(db.query(LinkedEntity).join(User).filter(User.email == user.email).count() > 10):
+    if(db.query(LinkedEntity).join(User).filter(User.email == user.email).count() >= 10):
         return {"Error" : "Se superó el límite de vinculaciones para esta cuenta"}
     
+    #TODO: Contar bien las keys (es un array)
     # Verificar que no supere el limite de vinculaciones por entidad financiera
-    if(db.query(LinkedEntity).filter(cbu == LinkedEntity.cbu).count() > 5):
+    if(db.query(LinkedEntity).filter(cbu == LinkedEntity.cbu).count() >= 5):
         return {"Error" : "Se superó el límite de vinculaciones para este CBU"}
     
     # Buscar el dueño del CBU en la tabla User
@@ -111,19 +113,19 @@ def modify_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):
     linkedEntity = db.query(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
 
     # Modificar la tupla en LinkedEntity segun el valor de la key (email, phone, cuit)
-    if user.key == "email":
-        newKey = owner.email
-    elif user.key == "phone":
-        newKey = owner.phoneNumber
-    elif user.key == "cuit":
-        newKey = owner.cuit
-    else:
-        newKey = user.key
+    # if user.key == "email":
+    #     newKey = owner.email
+    # elif user.key == "phone":
+    #     newKey = owner.phoneNumber
+    # elif user.key == "cuit":
+    #     newKey = owner.cuit
+    # else:
+    #     newKey = user.key
 
     if(linkedEntity.key == None):
-        linkedEntity.key = [newKey]
+        linkedEntity.key = [user.key]
     else:
-        linkedEntity.key.append(newKey)
+        linkedEntity.key.append(user.key)
     
     # Modificar la tupla
     try:
@@ -173,3 +175,18 @@ def get_transactions_by_email(db: Session, email: str, limit: int):
             .limit(limit) \
             .distinct() \
             .all()
+
+
+def solve_key(db:Session, email:str, key:str):
+    if(key == "email" or key == "phone" or key == "cuit"):
+        owner = db.query(User).filter(User.email == email).first()
+        if not owner:
+            return None
+        match key:
+            case "email":
+                return owner.email
+            case "phone":
+                return owner.phoneNumber
+            case "cuit":
+                return owner.cuit
+    return key
