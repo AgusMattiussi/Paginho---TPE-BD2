@@ -19,9 +19,14 @@ class InexistentFinancialEntityException(Exception):
     """Raised when the financial entity doesn't exist"""
     pass
 
+class CBUAlreadyVinculatedException(Exception):
+    """Raised when the CBU is already vinculated"""
+    pass
+
 def _account_vinculation_count(db: Session, email: str):
     return db.query(LinkedEntity).join(User).filter(User.email == email).count()
 
+#FIXME: Contar bien las keys (es un array)
 def _cbu_vinculation_count(db: Session, cbu: str):
     return db.query(LinkedEntity).filter(cbu == LinkedEntity.cbu).count()
 
@@ -53,6 +58,9 @@ def create_user(db: Session, email:str, name:str, password:str, cuit:str, phoneN
 def get_user(db: Session, skip: int = 0, limit: int = 100):
     return db.query(User).offset(skip).limit(limit).all()
 
+def get_user_by_email(db: Session, email: str):
+    return db.query(User).filter(User.email == email).first()
+
 #TODO: Validar que los campos tengan el formato correcto
 def get_user_by_cbu(db: Session, cbu: str):
     return db.query(User).join(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
@@ -82,40 +90,30 @@ def get_linked_entities(db: Session, user: BasicAuthSchema):
 
     return results
 
-def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
+def create_linked_entity(db: Session, email:str, cbu:str, userId:str, entityId:str):
     # Verificar que no supere el limite de vinculaciones por cuenta
-    if(db.query(LinkedEntity).join(User).filter(User.email == user.email).count() > 10):
-        return {"Error" : "Se superó el límite de vinculaciones para esta cuenta"}
+    if(_account_vinculation_count(db, email) >= 10):
+        raise AccountVinculationLimitException()
     
     # Verificar que no supere el limite de vinculaciones por entidad financiera
-    if(db.query(LinkedEntity).filter(user.cbu == LinkedEntity.cbu).count() > 5):
-        return {"Error" : "Se superó el límite de vinculaciones para este CBU"}
-
-    # Buscar el dueño del CBU en la tabla User
-    cbu = user.cbu
-    userId = db.query(User.id).filter(User.email == user.email).first()[0]	
-
-    # Buscar el banco asociado al CBU en la tabla FinancialEntity
-    entity = db.query(FinancialEntity).filter(FinancialEntity.id == cbu[:3]).first()
+    if(_cbu_vinculation_count(db, cbu) >= 5):
+        raise CBUVinculationLimitException()
 
     # Insertar nueva tupla en LinkedEntity
-    _linkedEntity = LinkedEntity(cbu=cbu, key=None, entityId=entity.id, userId=userId)
+    _linkedEntity = LinkedEntity(cbu=cbu, key=None, entityId=entityId, userId=userId)
 
     try:
         db.add(_linkedEntity)
         db.commit()
         db.refresh(_linkedEntity)
+    except UniqueViolation as error:
+        raise CBUAlreadyVinculatedException()
     except IntegrityError as error:
-        raise error
+        raise CBUAlreadyVinculatedException()
     except SQLAlchemyError as error:
         raise error
     
-    result = {
-        "cbu": cbu,
-        "bank": entity.name,
-        "key": None
-    }
-    return result    
+    return _linkedEntity    
 
 
 
@@ -125,7 +123,7 @@ def modify_linked_entity(db: Session, email: str, key:str, cbu:str):
     if(_account_vinculation_count(db, email) >= 10):
         raise AccountVinculationLimitException()
     
-    #TODO: Contar bien las keys (es un array)
+    
     # Verificar que no supere el limite de vinculaciones por entidad financiera
     if(_cbu_vinculation_count(db, cbu) >= 5):
         raise CBUVinculationLimitException()
@@ -145,8 +143,6 @@ def modify_linked_entity(db: Session, email: str, key:str, cbu:str):
     try:
         db.query(LinkedEntity).filter(LinkedEntity.cbu == cbu).update({'key': linkedEntity.key})
         db.commit()
-    except IntegrityError as error:
-        raise error
     except SQLAlchemyError as error:
         raise error
     

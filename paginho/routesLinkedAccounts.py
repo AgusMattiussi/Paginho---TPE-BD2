@@ -34,17 +34,29 @@ async def create_linked_account(request: LinkedAccountsPostSchema, db: Session =
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more fields is not valid")
     if not crud.validate_user(db, request.email, request.password):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
-    if len(request.cbu) != CBU_LENGTH:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU length must be 22 characters")
+    
+    # Buscar el dueño del CBU en la tabla User
+    user = crud.get_user_by_email(db, request.email)
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
+    
+    # Buscar el banco asociado al CBU en la tabla FinancialEntity
+    entity = crud.get_financial_entity_from_cbu(db, request.cbu)
+    if not entity:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Financial entity does not exist or is not supported")
     
     try:
-        linkedAccounts = crud.create_linked_entity(db, user=request)
-        if linkedAccounts:
-            return linkedAccounts
-        else:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Linked account not found")
+        crud.create_linked_entity(db, email=user.email, cbu=request.cbu, userId=user.id, entityId=entity.id)
+    except crud.AccountVinculationLimitException:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Account vinculation limit reached")
+    except crud.CBUVinculationLimitException:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU vinculation limit reached")
+    except crud.CBUAlreadyVinculatedException:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU already vinculated")
     except SQLAlchemyError as error:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)    
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, error._message())    
+    
+    return LinkedAccountDTO(cbu=request.cbu, bank=entity.name)
 
 # PUT /linkedAccounts/{cbu}
 @router.put("/{cbu}", status_code=status.HTTP_200_OK)
@@ -60,7 +72,7 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
     
     # Buscar el banco asociado al CBU en la tabla FinancialEntity
     entity = crud.get_financial_entity_from_cbu(db, cbu)
-    if entity is None:
+    if not entity:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Financial entity does not exist or is not supported")
 
     # Primero, se verifica que la key no exista en redis
@@ -78,7 +90,7 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
     except crud.AccountVinculationLimitException:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Account vinculation limit reached")
     except crud.CBUVinculationLimitException:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU vinculation limit reached")        
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU vinculation limit reached")      
     except Exception:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
     #TODO: Finally, delete key from redis
