@@ -7,7 +7,7 @@ BANKACCOUNT_COLLECTION_NAME = "BankAccount"
 
 DATABASE_URL = f"mongodb://{settings.MONGO_DB_HOSTNAME}:{settings.DATABASE_PORT}"
 client = MongoClient(DATABASE_URL)
-db = client.finantialEntity
+db = client.financialEntity
 
 
 class BankAccount(BaseModel):
@@ -70,7 +70,7 @@ def _populate_db():
 
     toInsert.append(
     {
-        "_id": "0110590940090418135201",
+        "_id": "0010590940090418135201",
         "accountType": "1",
         "name": "Julian Sasso",
         "email": "jsasso@itba.edu.ar",
@@ -81,7 +81,7 @@ def _populate_db():
     })
     toInsert.append(
     {
-        "_id": "0114239328123719132482",
+        "_id": "0014239328123719132482",
         "accountType": "1",
         "name": "Agustin Mattiussi",
         "email": "amattiussi@itba.edu.ar",
