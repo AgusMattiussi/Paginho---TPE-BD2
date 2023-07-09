@@ -2,9 +2,11 @@ from config import settings
 from pymongo import MongoClient
 from pydantic import BaseModel
 
+TRANSACTION_COLLECTION_NAME = "Transaction"
+BANKACCOUNT_COLLECTION_NAME = "BankAccount"
+
 DATABASE_URL = f"mongodb://{settings.MONGO_DB_HOSTNAME}:{settings.DATABASE_PORT}"
 client = MongoClient(DATABASE_URL)
-
 db = client.finantialEntity
 
 
@@ -57,7 +59,11 @@ def transactions_serializer(transactions) -> list:
 def get_db():
     return db
 
+def get_bankAccont_collection():
+    return db[BANKACCOUNT_COLLECTION_NAME]
 
+def get_transaction_collection():
+    return db[TRANSACTION_COLLECTION_NAME]
 
 # def _populate_db():
 #     toInsert = [] 
