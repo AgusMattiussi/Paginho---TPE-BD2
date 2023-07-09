@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from mongoDatabase import get_bankAccont_collection
+from mongoDatabase import get_bankAccount_collection
 from schemas import AccountDTO
 from pymongo.errors import PyMongoError
 import crud
@@ -16,7 +16,7 @@ async def get_account(cbu: str):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="CBU length must be 22 characters")
     
     try:
-        accounts = crud.get_account(cbu, get_bankAccont_collection())
+        accounts = crud.get_account(cbu, get_bankAccount_collection())
         if accounts:
             account = accounts[0]
             return AccountDTO(name=account['name'], email=account['email'], cuit=account['cuit'], telephone=account['phoneNumber'], balance=account['balance'])

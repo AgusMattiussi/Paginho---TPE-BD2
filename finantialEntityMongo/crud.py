@@ -1,4 +1,4 @@
-from mongoDatabase import bankAccounts_serializer, Transaction, transactions_serializer, get_bankAccont_collection
+from mongoDatabase import bankAccounts_serializer, Transaction, transactions_serializer, get_bankAccount_collection
 from datetime import datetime
 
 # Accounts
@@ -21,7 +21,7 @@ def create_transaction(collection, cbuFrom: str, cbuTo: str, amount: float):
     _id = collection.insert_one(dict(_transaction))
     transaction = transactions_serializer(collection.find({"_id": _id.inserted_id}))
 
-    bankAccountCollection = get_bankAccont_collection()
+    bankAccountCollection = get_bankAccount_collection()
     modify_balance(cbuFrom, amount, bankAccountCollection)
     modify_balance(cbuTo, amount, bankAccountCollection)
 

@@ -1,4 +1,4 @@
-from mongoDatabase import get_bankAccont_collection, get_transaction_collection
+from mongoDatabase import get_bankAccount_collection, get_transaction_collection
 from schemas import TransactionSchema, TransactionDTO
 from fastapi import APIRouter, HTTPException, status
 from pymongo.errors import PyMongoError
@@ -9,7 +9,7 @@ router = APIRouter()
 # POST /transactions
 @router.post("/")
 async def create_transaction(request: TransactionSchema):
-    bankAccountCollection = get_bankAccont_collection()
+    bankAccountCollection = get_bankAccount_collection()
 
     if not crud.validate_account(request.cbuFrom, bankAccountCollection):
         raise HTTPException(status_code=404, detail="Account does not belong to this bank")
