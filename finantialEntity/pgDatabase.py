@@ -15,35 +15,25 @@ Base = declarative_base()
 
 inspector = inspect(engine)
 # Check if database's FinancialEntity table needs to be populated
-shouldInsertFEInfo = not inspector.has_table('FinancialEntity')
+shouldInsertFEInfo = not inspector.has_table('BankAccount')
 
 
-class User(Base):
-    __tablename__ = 'User'
-    id = Column("UserID", Integer, primary_key=True, nullable=False, unique=True)
-    email = Column("Email", TEXT, unique=True, nullable=False)
+class BankAccount(Base):
+    __tablename__ = 'BankAccount'
+    cbu = Column("CBU", CHAR(22), primary_key=True, nullable=False, unique=True)
+    accountType = Column("Type", Integer, nullable=False)
     name = Column("Name", TEXT, nullable=False)
+    email = Column("Email", TEXT, unique=True, nullable=False)
     password = Column("Password", TEXT, nullable=False)
     cuit = Column("CUIT", CHAR(13), unique=True, nullable=False)
     phoneNumber = Column("PhoneNumber", VARCHAR(20), unique=True, nullable=False)
-
-class FinancialEntity(Base):
-    __tablename__ = 'FinancialEntity'
-    id = Column("EntityID", CHAR(3), primary_key=True, nullable=False, autoincrement=False, unique=True)
-    name = Column("Name", TEXT, nullable=False, unique=True)
-
-class LinkedEntity(Base):
-    __tablename__ = 'LinkedEntity'
-    cbu = Column("CBU", CHAR(22), primary_key=True, nullable=False)
-    key = Column("Key", ARRAY(TEXT))
-    entityId = Column("EntityID", CHAR(3), ForeignKey("FinancialEntity.EntityID"), nullable=False)
-    userId = Column("UserID", Integer, ForeignKey("User.UserID"), nullable=False)
+    balance = Column("Balance", DECIMAL(12,2), nullable=False)
 
 class Transaction(Base):
     __tablename__ = 'Transaction'
     time = Column("Time", TIMESTAMP, primary_key=True, nullable=False)
-    cbuFrom = Column("CBU1", CHAR(22), ForeignKey("LinkedEntity.CBU"), primary_key=True, nullable=False)
-    cbuTo = Column("CBU2", CHAR(22), ForeignKey("LinkedEntity.CBU"), primary_key=True, nullable=False)
+    cbuFrom = Column("CBU1", CHAR(22), primary_key=True, nullable=False)
+    cbuTo = Column("CBU2", CHAR(22), primary_key=True, nullable=False)
     amount = Column("Amount", DECIMAL(12,2), nullable=False)
 
 
@@ -59,15 +49,9 @@ def _populate_db():
     db = SessionLocal()
     toInsert = [] 
 
-    toInsert.append(FinancialEntity(id="011", name="Banco de la Nación Argentina"))
-    toInsert.append(FinancialEntity(id="014", name="Banco de la Provincia de Buenos Aires"))
-    toInsert.append(FinancialEntity(id="015", name="Industrial and Commercial Bank of China S.A."))
-    toInsert.append(FinancialEntity(id="017", name="BBvA Banco Francés S.A."))
-
-    toInsert.append(User(email="jsasso@itba.edu.ar", name="Julian Sasso", password="pass123", cuit="20-43036619-0", phoneNumber = "+54 11 1234-5600"))
+    toInsert.append(BankAccount(cbu="0110590940090418135201", accountType=1, name="Julian Sasso", email="jsasso@itba.edu.ar", password="pass123", cuit="20-43036619-0", phoneNumber = "+54 011 3932-3701", balance=10000.00))
+    toInsert.append(BankAccount(cbu="0114239328123719132482", accountType=1, name="Agustin Mattiussi", email="amattiussi@itba.edu.ar", password="pass123", cuit="20-43084142-5", phoneNumber = "+54 911 3896-0800", balance=50000.00))
     
-    toInsert.append(LinkedEntity(cbu="0110590940090418135201", key=["potato"], entityId="011", userId=1))
-
     for i in toInsert:
         db.add(i)
         db.commit()

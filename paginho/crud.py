@@ -58,10 +58,6 @@ def get_linked_entities(db: Session, user: BasicAuthSchema):
     return results
 
 def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
-    # Verificar validez del CBU
-    if(len(user.cbu) != CBU_LENGTH):
-        return {"Error" : "El CBU no es válido"}
-
     # Verificar que no supere el limite de vinculaciones por cuenta
     if(db.query(LinkedEntity).join(User).filter(User.email == user.email).count() > 10):
         return {"Error" : "Se superó el límite de vinculaciones para esta cuenta"}
@@ -75,20 +71,28 @@ def create_linked_entity(db: Session, user: LinkedAccountsPostSchema):
     userId = db.query(User.id).filter(User.email == user.email).first()[0]	
 
     # Buscar el banco asociado al CBU en la tabla FinancialEntity
-    entityId = db.query(FinancialEntity.id).filter(FinancialEntity.id == cbu[:3]).first()[0]
+    entity = db.query(FinancialEntity).filter(FinancialEntity.id == cbu[:3]).first()
 
     # Insertar nueva tupla en LinkedEntity
-    _linkedEntity = LinkedEntity(cbu=cbu, key=None, entityId=entityId, userId=userId)
-    db.add(_linkedEntity)
-    db.commit()
-    db.refresh(_linkedEntity)
-    return _linkedEntity
+    _linkedEntity = LinkedEntity(cbu=cbu, key=None, entityId=entity.id, userId=userId)
 
-def modify_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):
-    # Verificar validez del CBU
-    if(len(cbu) != CBU_LENGTH):
-        return {"Error" : "El CBU no es válido"}
+    try:
+        db.add(_linkedEntity)
+        db.commit()
+        db.refresh(_linkedEntity)
+    except IntegrityError as error:
+        raise error
+    except SQLAlchemyError as error:
+        raise error
     
+    result = {
+        "cbu": cbu,
+        "bank": entity.name,
+        "key": None
+    }
+    return result    
+
+def modify_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):  
     # Verificar que no supere el limite de vinculaciones por cuenta
     if(db.query(LinkedEntity).join(User).filter(User.email == user.email).count() > 10):
         return {"Error" : "Se superó el límite de vinculaciones para esta cuenta"}
@@ -122,10 +126,35 @@ def modify_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):
         linkedEntity.key.append(newKey)
     
     # Modificar la tupla
-    db.query(LinkedEntity).filter(LinkedEntity.cbu == cbu).update({'key': linkedEntity.key})
-    db.commit()
-    return linkedEntity
+    try:
+        db.query(LinkedEntity).filter(LinkedEntity.cbu == cbu).update({'key': linkedEntity.key})
+        db.commit()
+    except IntegrityError as error:
+        raise error
+    except SQLAlchemyError as error:
+        raise error
+    
+    result = {
+        "cbu": cbu,
+        "bank": entity.name,
+        "key": linkedEntity.key
+    }
+    return result
 
+def get_keys_for_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):  
+    result = db.query(FinancialEntity.name, LinkedEntity.key)\
+            .join(FinancialEntity)\
+                .filter(LinkedEntity.cbu == cbu, FinancialEntity.id == cbu[:3]).all()
+    results = []
+    for row in result:
+        entity_dict = {
+            "cbu": cbu,
+            "name": row[0],
+            "key": row[1]
+        }
+        results.append(entity_dict)
+
+    return results
 
 # Transactions
 def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
@@ -135,3 +164,12 @@ def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
     db.commit()
     db.refresh(_transaction)
     return _transaction
+
+#TODO: Validar not found, etc
+def get_transactions_by_email(db: Session, email: str, limit: int):
+    return db.query(Transaction) \
+            .join(LinkedEntity, (Transaction.cbuFrom == LinkedEntity.cbu) | (Transaction.cbuTo == LinkedEntity.cbu)) \
+            .join(User, (LinkedEntity.userId == User.id) & (User.email == email)) \
+            .limit(limit) \
+            .distinct() \
+            .all()
