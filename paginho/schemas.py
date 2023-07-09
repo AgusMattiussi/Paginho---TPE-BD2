@@ -124,4 +124,3 @@ class PostTransactionSchema(BaseModel): # POST /transactions
     
     class Config:
         orm_mode = True
-

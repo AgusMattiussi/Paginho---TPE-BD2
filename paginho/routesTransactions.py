@@ -2,9 +2,10 @@ from fastapi import FastAPI, Depends
 from pgDatabase import get_db
 from sqlalchemy.orm import Session
 from schemas import PostTransactionSchema, GetTransactionSchema
-import crud
 from fastapi import APIRouter, HTTPException, status
 from redisDatabase import get_cbu
+
+import crud, financialEntities
 
 router = APIRouter()
 
@@ -34,5 +35,13 @@ async def create_transaction(request: PostTransactionSchema, db: Session = Depen
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error getting key")
     if not cbuTo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Key not found")
-    # TODO: Resolver transaccion con bancos
+    
+    try:
+        financialEntities.bank_transaction(db, request.cbu, cbuTo, request.amount)
+    except financialEntities.UnregisteredEntityException():
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="One of the financial entities is unreachable")
+    except Exception:
+        pass
+
+    #TODO: Validar 
     return crud.create_transaction(db, cbuFrom=request.cbu, cbuTo=cbuTo, amount=request.amount)
