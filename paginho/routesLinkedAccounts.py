@@ -3,7 +3,7 @@ from fastapi import Depends
 from pgDatabase import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from schemas import BasicAuthSchema, LinkedAccountsPostSchema, LinkedAccountsPutSchema
+from schemas import BasicAuthSchema, LinkedAccountsPostSchema, LinkedAccountsPutSchema, LinkedAccountDTO
 import crud, redisDatabase
 
 CBU_LENGTH = 22
@@ -58,20 +58,35 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
     solvedKey = crud.solve_key(db, request.email, request.key)
     if not solvedKey:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
+    
+    # Buscar el banco asociado al CBU en la tabla FinancialEntity
+    entity = crud.get_financial_entity_from_cbu(db, cbu)
+    if not entity:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Financial entity does not exist or is not supported")
 
-    request.key = solvedKey
-
-    try:
-        linkedAccount = crud.modify_linked_account(cbu, db, user=request)
-        if linkedAccount:
-            if redisDatabase.set_cbu(solvedKey, cbu):
-                return linkedAccount
-            #TODO: Volver atras en LinkedAccounts?
+    # Primero, se verifica que la key no exista en redis
+    try: 
+        if not redisDatabase.set_cbu(solvedKey, cbu):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Key is already in use")
-        else:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Linked account not found")
-    except Exception as error:
+    except Exception:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    linkedAccount = None
+    try:
+        linkedAccount = crud.modify_linked_entity(db, email=request.email, key=solvedKey, cbu=cbu)
+        if not linkedAccount:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Linked account not found")
+    except crud.AccountVinculationLimitException:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Account vinculation limit reached")
+    except crud.CBUVinculationLimitException:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU vinculation limit reached")        
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+    #TODO: Finally, delete key from redis
+    
+    return LinkedAccountDTO(cbu=linkedAccount.cbu, bank=entity.name,  keys=linkedAccount.keys)
+    
+
 
 # GET /linkedAccounts/{cbu}
 @router.get("/{cbu}", status_code=status.HTTP_200_OK)
@@ -90,3 +105,5 @@ async def get_keys_for_linked_account(cbu: str, request: BasicAuthSchema, db: Se
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Linked account not found")
     except Exception as error:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+#TODO: Delete key?

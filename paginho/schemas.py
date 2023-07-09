@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 import validators
 
@@ -34,7 +34,6 @@ class UserDTO(BaseModel): # POST /users
 
     class Config:
         orm_mode = True
-
 
 
 class LinkedUserSchema(BaseModel): # GET /users
@@ -83,6 +82,14 @@ class LinkedAccountsPutSchema(BaseModel): # PUT /linkedAccounts/{cbu}
     class Config:
         orm_mode = True
 
+
+class LinkedAccountDTO(BaseModel): 
+    cbu: Optional[str] = None
+    bank: Optional[str] = None
+    keys: Optional[List[str]] = []
+
+    class Config:
+        orm_mode = True
 
 class GetTransactionSchema(BaseModel): # GET /transactions
     email: str = None
