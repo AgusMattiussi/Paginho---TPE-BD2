@@ -55,7 +55,7 @@ async def create_linked_account(request: LinkedAccountsPostSchema, db: Session =
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU vinculation limit reached")
     except crud.CBUAlreadyVinculatedException:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU already vinculated")
-    except Exception:
+    except Exception as error:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, error._message())    
     
     return LinkedAccountDTO(cbu=request.cbu, bank=entity.name)

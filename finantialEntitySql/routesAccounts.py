@@ -11,7 +11,7 @@ CBU_LENGTH = 22
 router = APIRouter()
 
 # GET /accounts/{cbu}
-@router.get("/{cbu}")
+@router.get("/{cbu}", status_code= status.HTTP_200_OK)
 async def get_account(cbu: str, db: Session = Depends(get_db)):
     if len(cbu) != CBU_LENGTH:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="CBU length must be 22 characters")
