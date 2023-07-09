@@ -7,7 +7,7 @@ BANKACCOUNT_COLLECTION_NAME = "BankAccount"
 
 DATABASE_URL = f"mongodb://{settings.MONGO_DB_HOSTNAME}:{settings.DATABASE_PORT}"
 client = MongoClient(DATABASE_URL)
-db = client.finantialEntity
+db = client.financialEntity
 
 
 class BankAccount(BaseModel):
