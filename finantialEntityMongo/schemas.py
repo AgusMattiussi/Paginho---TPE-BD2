@@ -1,11 +1,16 @@
 from typing import Optional
 from pydantic import BaseModel
-
+import validators
 
 class TransactionSchema(BaseModel):
     cbuFrom: str = None
     cbuTo: str = None
     amount: float = None
+
+    def is_valid(self):
+        return  validators.validate_cbu(self.cbuFrom) and \
+                validators.validate_cbu(self.cbuTo) and \
+                validators.validate_amount(self.amount)
 
 class AccountDTO(BaseModel):
     email: Optional[str] = None

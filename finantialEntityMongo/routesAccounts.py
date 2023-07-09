@@ -8,9 +8,8 @@ CBU_LENGTH = 22
 
 router = APIRouter()
 
-
 # GET /accounts/{cbu}
-@router.get("/{cbu}")
+@router.get("/{cbu}", status_code= status.HTTP_200_OK)
 async def get_account(cbu: str):
     if len(cbu) != CBU_LENGTH:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="CBU length must be 22 characters")
@@ -22,5 +21,5 @@ async def get_account(cbu: str):
             return AccountDTO(name=account['name'], email=account['email'], cuit=account['cuit'], telephone=account['phoneNumber'], balance=account['balance'])
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
-    except PyMongoError as e:
+    except PyMongoError:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

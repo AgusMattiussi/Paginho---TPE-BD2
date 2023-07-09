@@ -22,5 +22,5 @@ async def get_account(cbu: str, db: Session = Depends(get_db)):
             return AccountDTO(name=account.name, email=account.email, cuit=account.cuit, telephone=account.phoneNumber, balance=account.balance)
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
-    except SQLAlchemyError as error:
+    except SQLAlchemyError:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
