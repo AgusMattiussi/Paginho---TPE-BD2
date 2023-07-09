@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from pgDatabase import User, LinkedEntity, FinancialEntity, Transaction
-from schemas import PostUserSchema, BasicAuthSchema, LinkedAccountsPostSchema, LinkedAccountsPutSchema
+from schemas import LinkedAccountsPutSchema
 from psycopg2.errors import UniqueViolation
 from datetime import datetime
 
@@ -74,21 +74,21 @@ def validate_user(db: Session, email: str, password: str):
 
 
 # LinkedEntity
-def get_linked_entities(db: Session, user: BasicAuthSchema):
-    result = db.query(LinkedEntity.cbu, FinancialEntity.name, LinkedEntity.key)\
-        .join(User, LinkedEntity.userId == User.id)\
-            .join(FinancialEntity, LinkedEntity.entityId == FinancialEntity.id)\
-                .filter(User.email == user.email, User.password == user.password).all()
-    results = []
+def get_linked_entities_by_email(db: Session, email:str):
+    result = db.query(LinkedEntity.cbu, FinancialEntity.name, LinkedEntity.key) \
+                .join(User, LinkedEntity.userId == User.id) \
+                .join(FinancialEntity, LinkedEntity.entityId == FinancialEntity.id) \
+                .filter(User.email == email).all()
+    out = []
     for row in result:
         entity_dict = {
             "cbu": row[0],
             "name": row[1],
-            "key": row[2]
+            "keys": row[2]
         }
-        results.append(entity_dict)
+        out.append(entity_dict)
 
-    return results
+    return out
 
 def create_linked_entity(db: Session, email:str, cbu:str, userId:str, entityId:str):
     # Verificar que no supere el limite de vinculaciones por cuenta
@@ -148,20 +148,19 @@ def modify_linked_entity(db: Session, email: str, key:str, cbu:str):
     
     return linkedEntity
 
-def get_keys_for_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):  
-    result = db.query(FinancialEntity.name, LinkedEntity.key)\
-            .join(FinancialEntity)\
-                .filter(LinkedEntity.cbu == cbu, FinancialEntity.id == cbu[:3]).all()
-    results = []
-    for row in result:
-        entity_dict = {
-            "cbu": cbu,
-            "name": row[0],
-            "key": row[1]
-        }
-        results.append(entity_dict)
-
-    return results
+# def get_keys_for_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):  
+#     result = db.query(FinancialEntity.name, LinkedEntity.key)\
+#             .join(FinancialEntity)\
+#                 .filter(LinkedEntity.cbu == cbu, FinancialEntity.id == cbu[:3]).all()
+#     results = []
+#     for row in result:
+#         entity_dict = {
+#             "cbu": cbu,
+#             "name": row[0],
+#             "key": row[1]
+#         }
+#         results.append(entity_dict)
+#     return results
 
 # Transactions
 def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
