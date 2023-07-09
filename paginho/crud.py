@@ -160,9 +160,13 @@ def get_keys_for_linked_account(db: Session, cbu:str):
 def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
     formattedDatetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     _transaction = Transaction(time= formattedDatetime, cbuFrom=cbuFrom, cbuTo=cbuTo, amount=amount)
-    db.add(_transaction)
-    db.commit()
-    db.refresh(_transaction)
+
+    try:
+        db.add(_transaction)
+        db.commit()
+        db.refresh(_transaction)
+    except SQLAlchemyError:
+        pass
     return _transaction
 
 #TODO: Validar not found, etc

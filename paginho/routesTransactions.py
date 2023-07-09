@@ -43,5 +43,8 @@ async def create_transaction(request: PostTransactionSchema, db: Session = Depen
     except Exception:
         pass
 
-    #TODO: Validar 
-    return crud.create_transaction(db, cbuFrom=request.cbu, cbuTo=cbuTo, amount=request.amount)
+    try:
+        transaction = crud.create_transaction(db, cbuFrom=request.cbu, cbuTo=cbuTo, amount=request.amount)
+        return transaction
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Error processing transaction")
