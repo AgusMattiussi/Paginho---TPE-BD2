@@ -47,7 +47,6 @@ async def create_linked_account(request: LinkedAccountsPostSchema, db: Session =
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)    
 
 # PUT /linkedAccounts/{cbu}
-# FIXME: CBU?
 @router.put("/{cbu}", status_code=status.HTTP_200_OK)
 async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: Session = Depends(get_db)):
     if not request.is_valid():
@@ -61,7 +60,7 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
     
     # Buscar el banco asociado al CBU en la tabla FinancialEntity
     entity = crud.get_financial_entity_from_cbu(db, cbu)
-    if not entity:
+    if entity is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Financial entity does not exist or is not supported")
 
     # Primero, se verifica que la key no exista en redis
@@ -74,7 +73,7 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
     linkedAccount = None
     try:
         linkedAccount = crud.modify_linked_entity(db, email=request.email, key=solvedKey, cbu=cbu)
-        if not linkedAccount:
+        if linkedAccount is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Linked account not found")
     except crud.AccountVinculationLimitException:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Account vinculation limit reached")
@@ -84,7 +83,7 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
     #TODO: Finally, delete key from redis
     
-    return LinkedAccountDTO(cbu=linkedAccount.cbu, bank=entity.name,  keys=linkedAccount.keys)
+    return LinkedAccountDTO(cbu=linkedAccount.cbu, bank=entity.name,  keys=linkedAccount.key)
     
 
 

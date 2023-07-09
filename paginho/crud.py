@@ -27,10 +27,10 @@ def _cbu_vinculation_count(db: Session, cbu: str):
 
 # Los 3 primeros digitos del CBU identifican a la entidad financiera
 def get_financial_entity_from_cbu(db: Session, cbu: str):
-    db.query(FinancialEntity).filter(FinancialEntity.id == cbu[:3]).first()
+    return db.query(FinancialEntity).filter(FinancialEntity.id == cbu[:3]).first()
 
 def _get_linked_entity(db: Session, cbu: str):
-    db.query(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
+    return db.query(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
 
 # User 
 #TODO: Validar que los campos tengan el formato correcto
