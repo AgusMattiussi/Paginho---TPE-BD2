@@ -1,6 +1,5 @@
-from mongoDatabase import bankAccounts_serializer, Transaction, transactions_serializer
+from mongoDatabase import bankAccounts_serializer, Transaction, transactions_serializer, get_bankAccont_collection
 from datetime import datetime
-from decimal import Decimal
 
 # Accounts
 def get_account(cbu, collection):
@@ -11,11 +10,8 @@ def validate_account(cbu, collection):
     return collection.count_documents({"_id": cbu}) > 0
 
 def modify_balance(cbu, amount, collection):
-    # account = db.query(BankAccount).filter(BankAccount.cbu == cbu).first()
-    # account.balance += Decimal(amount)
-    # db.commit()
-    # db.refresh(account)
-    return {"TO": "DO"}
+    update_operation = {"$inc": {"balance": amount}} if amount >= 0 else {"$inc": {"balance": amount}}
+    collection.update_one({"_id": cbu}, update_operation)
 
 # Transactions
 def create_transaction(collection, cbuFrom: str, cbuTo: str, amount: float):
@@ -25,7 +21,8 @@ def create_transaction(collection, cbuFrom: str, cbuTo: str, amount: float):
     _id = collection.insert_one(dict(_transaction))
     transaction = transactions_serializer(collection.find({"_id": _id.inserted_id}))
 
-    # modify_balance(cbuFrom, -amount, db)
-    # modify_balance(cbuTo, amount, db)
+    bankAccountCollection = get_bankAccont_collection()
+    modify_balance(cbuFrom, amount, bankAccountCollection)
+    modify_balance(cbuTo, amount, bankAccountCollection)
 
     return transaction
