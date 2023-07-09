@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from pgDatabase import User, LinkedEntity, FinancialEntity, Transaction
-from schemas import LinkedAccountsPutSchema
 from psycopg2.errors import UniqueViolation
 from datetime import datetime
 
@@ -148,19 +147,14 @@ def modify_linked_entity(db: Session, email: str, key:str, cbu:str):
     
     return linkedEntity
 
-# def get_keys_for_linked_account(cbu, db: Session, user: LinkedAccountsPutSchema):  
-#     result = db.query(FinancialEntity.name, LinkedEntity.key)\
-#             .join(FinancialEntity)\
-#                 .filter(LinkedEntity.cbu == cbu, FinancialEntity.id == cbu[:3]).all()
-#     results = []
-#     for row in result:
-#         entity_dict = {
-#             "cbu": cbu,
-#             "name": row[0],
-#             "key": row[1]
-#         }
-#         results.append(entity_dict)
-#     return results
+def get_keys_for_linked_account(db: Session, cbu:str):  
+    result = db.query(FinancialEntity.name, LinkedEntity.key) \
+                .join(FinancialEntity) \
+                .filter(LinkedEntity.cbu == cbu, FinancialEntity.id == cbu[:3]).first()
+    
+    if result:
+        return {"cbu": cbu, "name": result[0], "keys": result[1]}
+    return None
 
 # Transactions
 def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):

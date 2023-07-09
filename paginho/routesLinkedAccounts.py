@@ -21,7 +21,7 @@ async def get_linked_accounts(request: BasicAuthSchema, db: Session = Depends(ge
     linkedAccounts = []
     try:
         linkedAccount = crud.get_linked_entities_by_email(db, email=request.email)
-    except SQLAlchemyError as error:
+    except Exception:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     for account in linkedAccount:
@@ -55,7 +55,7 @@ async def create_linked_account(request: LinkedAccountsPostSchema, db: Session =
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU vinculation limit reached")
     except crud.CBUAlreadyVinculatedException:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU already vinculated")
-    except SQLAlchemyError as error:
+    except Exception:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, error._message())    
     
     return LinkedAccountDTO(cbu=request.cbu, bank=entity.name)
@@ -103,20 +103,18 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
 
 # GET /linkedAccounts/{cbu}
 @router.get("/{cbu}", status_code=status.HTTP_200_OK)
-async def get_keys_for_linked_account(cbu: str, request: BasicAuthSchema, db: Session = Depends(get_db)):
+async def get_linked_account(cbu: str, request: BasicAuthSchema, db: Session = Depends(get_db)):
     if not request.is_valid():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Email is not valid")
     if not crud.validate_user(db, request.email, request.password):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
-    if len(cbu) != CBU_LENGTH:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU length must be 22 characters")
+
+    response = {}
     try:
-        linkedAccounts = crud.get_keys_for_linked_account(cbu, db, user=request)
-        if linkedAccounts:
-            return linkedAccounts
-        else:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Linked account not found")
+        linkedAccount = crud.get_keys_for_linked_account(db, cbu)
+        if linkedAccount:
+            response = LinkedAccountDTO(cbu=linkedAccount["cbu"], bank=linkedAccount["name"], keys=linkedAccount["keys"])
     except Exception as error:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+    return response
 #TODO: Delete key?
