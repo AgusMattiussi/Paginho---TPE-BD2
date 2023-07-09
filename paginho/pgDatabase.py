@@ -64,7 +64,7 @@ def _populate_db():
     toInsert.append(FinancialEntity(id="015", name="Industrial and Commercial Bank of China S.A."))
     toInsert.append(FinancialEntity(id="017", name="BBvA Banco Francés S.A."))
 
-    toInsert.append(User(email="jsasso@itba.edu.ar", name="Julian Sasso", password="pass123", cuit="20-43036619-0", phoneNumber = "+54 011 3932-3701"))
+    toInsert.append(User(email="jsasso@itba.edu.ar", name="Julian Sasso", password="pass123", cuit="20-43036619-0", phoneNumber = "+54 11 1234-5600"))
     
     toInsert.append(LinkedEntity(cbu="0110590940090418135201", key=["potato"], entityId="011", userId=1))
 
