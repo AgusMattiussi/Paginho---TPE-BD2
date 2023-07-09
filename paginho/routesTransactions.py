@@ -27,7 +27,11 @@ async def create_transaction(request: PostTransactionSchema, db: Session = Depen
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more fields is not valid")
     if not crud.validate_user(db, request.email, request.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    cbuTo = get_cbu(request.key)
+    cbuTo = None
+    try:
+        cbuTo = get_cbu(request.key)
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error getting key")
     if not cbuTo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Key not found")
     # TODO: Resolver transaccion con bancos
