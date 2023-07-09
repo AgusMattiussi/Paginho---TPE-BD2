@@ -16,10 +16,10 @@ def get_cbu(key: str):
         
 def set_cbu(key: str, cbu: str):
     if not redis_client.get(key):
-        redis_client.set(key, cbu)
-        return True
-    else:
-        return False
+        if redis_client.set(key, cbu):
+            return True
+        raise redis.RedisError
+    return False
     # with redis_client.pipeline() as pipe:
     #     while True:
     #         try:
@@ -39,3 +39,4 @@ def set_cbu(key: str, cbu: str):
     #             continue
     #     return True 
         
+#TODO: Delete key

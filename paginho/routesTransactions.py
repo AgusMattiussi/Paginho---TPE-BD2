@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from schemas import PostTransactionSchema, GetTransactionSchema
 import crud
 from fastapi import APIRouter, HTTPException, status
-from redis_file import get_cbu
+from redisDatabase import get_cbu
 
 router = APIRouter()
 
