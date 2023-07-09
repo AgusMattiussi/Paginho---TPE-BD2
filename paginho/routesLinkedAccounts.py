@@ -71,19 +71,16 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
     solvedKey = crud.solve_key(db, request.email, request.key)
     if not solvedKey:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
-    
     # Buscar el banco asociado al CBU en la tabla FinancialEntity
     entity = crud.get_financial_entity_from_cbu(db, cbu)
     if not entity:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Financial entity does not exist or is not supported")
-
     # Primero, se verifica que la key no exista en redis
     try: 
         if not redisDatabase.set_cbu(solvedKey, cbu):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Key is already in use")
     except Exception:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     linkedAccount = None
     try:
         linkedAccount = crud.modify_linked_entity(db, email=request.email, key=solvedKey, cbu=cbu)
@@ -96,7 +93,6 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
     except Exception:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
     #TODO: Finally, delete key from redis
-    
     return LinkedAccountDTO(cbu=linkedAccount.cbu, bank=entity.name,  keys=linkedAccount.key)
     
 

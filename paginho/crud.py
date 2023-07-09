@@ -165,8 +165,8 @@ def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
         db.add(_transaction)
         db.commit()
         db.refresh(_transaction)
-    except SQLAlchemyError:
-        pass
+    except SQLAlchemyError as e:
+        raise e
     return _transaction
 
 #TODO: Validar not found, etc
