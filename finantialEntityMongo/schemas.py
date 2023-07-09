@@ -2,13 +2,10 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class TransactionSchema(BaseModel): # POST /transactions
+class TransactionSchema(BaseModel):
     cbuFrom: str = None
     cbuTo: str = None
     amount: float = None
-    
-    class Config:
-        orm_mode = True
 
 class AccountDTO(BaseModel):
     email: Optional[str] = None
@@ -17,14 +14,9 @@ class AccountDTO(BaseModel):
     telephone: Optional[str] = None
     balance: Optional[float] = None
 
-    class Config:
-        orm_mode = True
 
 class TransactionDTO(BaseModel):
     timestamp: Optional[str] = None
     cbuFrom: Optional[str] = None
     cbuTo: Optional[str] = None
     amount: Optional[float] = None
-
-    class Config:
-        orm_mode = True

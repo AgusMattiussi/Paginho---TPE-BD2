@@ -1,10 +1,11 @@
-from mongoDatabase import BankAccount, Transaction
+from mongoDatabase import bankAccounts_serializer
 from datetime import datetime
 from decimal import Decimal
 
 # Accounts
 def get_account(cbu, collection):
-    return collection.find_one({"_id": cbu})
+    accounts = bankAccounts_serializer(collection.find({"_id": cbu}))
+    return accounts
 
 # def validate_account(cbu, db):
 #     return db.query(BankAccount).filter(BankAccount.cbu == cbu).count() > 0
