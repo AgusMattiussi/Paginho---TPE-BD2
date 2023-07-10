@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from pgDatabase import FinancialEntity
-from fastapi import status
+from fastapi import status, HTTPException
 import crud
 import requests
 import json
@@ -51,15 +51,15 @@ def _single_bank_transaction(entity: FinancialEntity, cbuFrom: str, cbuTo: str, 
 def _multiple_bank_transaction(entityFrom: FinancialEntity, entityTo: FinancialEntity, cbuFrom: str, cbuTo: str, amount: float):
     try:
         _single_bank_transaction(entityFrom, cbuFrom, cbuTo, amount)
-    except Exception as e:
-        raise e
+    except HTTPException as e:
+        raise
     
     try:
         _single_bank_transaction(entityTo, cbuFrom, cbuTo, amount)
-    except Exception as e:
+    except HTTPException as e:
         # Rollback first transaction
         _single_bank_transaction(entityFrom, cbuTo, cbuFrom, amount)
-        raise e
+        raise
     
 
 
@@ -70,11 +70,11 @@ def bank_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
     if entityFrom.id == entityTo.id:
         try:
             _single_bank_transaction(entityFrom, cbuFrom, cbuTo, amount)
-        except Exception as e:
-            raise e
+        except HTTPException as e:
+            raise
     else:
         try:
             _multiple_bank_transaction(entityFrom, entityTo, cbuFrom, cbuTo, amount)
-        except Exception as e:
-            raise e
+        except HTTPException as e:
+            raise
     

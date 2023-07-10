@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from config import settings
 from sqlalchemy.dialects.postgresql import UUID
-
+from hash import hash_password
 
 DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOSTNAME}:{settings.DATABASE_PORT}/{settings.POSTGRES_DB}"
 """{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@"""
@@ -154,7 +154,7 @@ def _populate_db():
     for key, value in FINANCIAL_ENTITIES.items():
         toInsert.append(FinancialEntity(id=key, name=value))
 
-    toInsert.append(User(email="jsasso@itba.edu.ar", name="Julian Sasso", password="pass123", cuit="20-43036619-0", phoneNumber = "+54 11 1234-5600"))
+    toInsert.append(User(email="jsasso@itba.edu.ar", name="Julian Sasso", password=hash_password("pass123"), cuit="20-43036619-0", phoneNumber = "+54 11 1234-5600"))
     
     toInsert.append(LinkedEntity(cbu="0110590940090418135201", key=["potato"], entityId="011", userId=1))
 

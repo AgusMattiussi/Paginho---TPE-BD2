@@ -3,6 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from pgDatabase import User, LinkedEntity, FinancialEntity, Transaction
 from psycopg2.errors import UniqueViolation
 from datetime import datetime
+from hash import hash_password, is_valid
 
 CBU_LENGTH = 22
 
@@ -37,11 +38,10 @@ def _get_linked_entity(db: Session, cbu: str):
     return db.query(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
 
 # User 
-#TODO: Validar que los campos tengan el formato correcto
 def create_user(db: Session, email:str, name:str, password:str, cuit:str, phoneNumber:str):
     _user = User(email=email,
                 name=name, 
-                password=password, 
+                password=hash_password(password), 
                 cuit=cuit, 
                 phoneNumber=phoneNumber)
     try:
@@ -60,15 +60,13 @@ def get_user(db: Session, skip: int = 0, limit: int = 100):
 def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
-#TODO: Validar que los campos tengan el formato correcto
 def get_user_by_cbu(db: Session, cbu: str):
     return db.query(User).join(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
     
-#TODO: Hashear password
 def validate_user(db: Session, email: str, password: str):
     user = db.query(User).filter(User.email == email).first()
     if user:
-        return user.password == password
+        return is_valid(password, user.password)
     return False
 
 
@@ -166,7 +164,7 @@ def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
         db.commit()
         db.refresh(_transaction)
     except SQLAlchemyError as e:
-        raise e
+        raise
     return _transaction
 
 #TODO: Validar not found, etc

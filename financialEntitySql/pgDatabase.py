@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from config import settings
 from sqlalchemy.dialects.postgresql import UUID
+from hash import hash_password
 
 
 DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOSTNAME}:{settings.DATABASE_PORT}/{settings.POSTGRES_DB}"
@@ -49,8 +50,8 @@ def _populate_db():
     db = SessionLocal()
     toInsert = [] 
 
-    toInsert.append(BankAccount(cbu="0000590940090418135201", accountType=1, name="Julian Sasso", email="jsasso@itba.edu.ar", password="pass123", cuit="20-43036619-0", phoneNumber = "+54 011 3932-3701", balance=10000.00))
-    toInsert.append(BankAccount(cbu="0004239328123719132482", accountType=1, name="Agustin Mattiussi", email="amattiussi@itba.edu.ar", password="pass123", cuit="20-43084142-5", phoneNumber = "+54 911 3896-0800", balance=50000.00))
+    toInsert.append(BankAccount(cbu="0000590940090418135201", accountType=1, name="Julian Sasso", email="jsasso@itba.edu.ar", password=hash_password("pass123"), cuit="20-43036619-0", phoneNumber = "+54 011 3932-3701", balance=10000.00))
+    toInsert.append(BankAccount(cbu="0004239328123719132482", accountType=1, name="Agustin Mattiussi", email="amattiussi@itba.edu.ar", password=hash_password("pass123"), cuit="20-43084142-5", phoneNumber = "+54 911 3896-0800", balance=50000.00))
     
     for i in toInsert:
         db.add(i)

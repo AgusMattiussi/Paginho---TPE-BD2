@@ -1,6 +1,7 @@
 from config import settings
 from pymongo import MongoClient
 from pydantic import BaseModel
+from hash import hash_password
 
 TRANSACTION_COLLECTION_NAME = "Transaction"
 BANKACCOUNT_COLLECTION_NAME = "BankAccount"
@@ -74,7 +75,7 @@ def _populate_db():
         "accountType": "1",
         "name": "Julian Sasso",
         "email": "jsasso@itba.edu.ar",
-        "password": "pass123",
+        "password": hash_password("pass123"),
         "cuit": "20-43036619-0",
         "phoneNumber": "+54 011 3932-3701",
         "balance": 10000
@@ -85,7 +86,7 @@ def _populate_db():
         "accountType": "1",
         "name": "Agustin Mattiussi",
         "email": "amattiussi@itba.edu.ar",
-        "password": "pass123",
+        "password": hash_password("pass123"),
         "cuit": "20-43084142-5",
         "phoneNumber": "+54 911 3896-0800",
         "balance": 50000

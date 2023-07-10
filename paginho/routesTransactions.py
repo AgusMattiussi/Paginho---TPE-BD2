@@ -41,12 +41,12 @@ async def create_transaction(request: PostTransactionSchema, db: Session = Depen
     except financialEntities.UnregisteredEntityException:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="One of the financial entities is unreachable")
     except HTTPException as e:
-        raise e
+        raise
     except Exception as e:
-        raise e
+        raise
 
     try:
         transaction = crud.create_transaction(db, cbuFrom=request.cbu, cbuTo=cbuTo, amount=request.amount)
         return transaction
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Error processing transaction")
+        raise 
