@@ -15,7 +15,7 @@ def get_cbu(key: str):
             # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Key not found")
         
 def set_cbu(key: str, cbu: str):
-    if not redis_client.get(key):
+    if redis_client.get(key) is None:
         if redis_client.set(key, cbu):
             return True
         raise redis.RedisError

@@ -36,17 +36,14 @@ async def create_linked_account(request: LinkedAccountsPostSchema, db: Session =
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more fields is not valid")
     if not crud.validate_user(db, request.email, request.password):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
-    
     # Buscar el usuario en la tabla User
     user = crud.get_user_by_email(db, request.email)
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
-    
     # Buscar el banco asociado al CBU en la tabla FinancialEntity
     entity = crud.get_financial_entity_from_cbu(db, request.cbu)
     if not entity:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Financial entity does not exist or is not supported")
-    
     try:
         crud.create_linked_entity(db, email=user.email, cbu=request.cbu, userId=user.id, entityId=entity.id)
     except crud.AccountVinculationLimitException:
@@ -55,9 +52,8 @@ async def create_linked_account(request: LinkedAccountsPostSchema, db: Session =
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU vinculation limit reached")
     except crud.CBUAlreadyVinculatedException:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU already vinculated")
-    except Exception as error:
+    except Exception:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal server error")    
-    
     return LinkedAccountDTO(cbu=request.cbu, bank=entity.name)
 
 # PUT /linkedAccounts/{cbu}
@@ -67,7 +63,6 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more fields is not valid")
     if not crud.validate_user(db, request.email, request.password, cbu):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
-    
     solvedKey = crud.solve_key(db, request.email, request.key)
     if not solvedKey:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
@@ -79,8 +74,10 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
     try: 
         if not redisDatabase.set_cbu(solvedKey, cbu):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Key is already in use")
+    except HTTPException:
+        raise
     except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal Server Error xd")
     linkedAccount = None
     try:
         linkedAccount = crud.modify_linked_entity(db, email=request.email, key=solvedKey, cbu=cbu)

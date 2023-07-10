@@ -31,7 +31,7 @@ def _account_vinculation_count(db: Session, email: str):
 
 def _cbu_vinculation_count(db: Session, cbu: str):
     keys = db.query(LinkedEntity.key).filter(LinkedEntity.cbu == cbu).first()
-    if not keys[0]:
+    if not keys or not keys[0]:
         return 0
     return len(keys[0])
 
