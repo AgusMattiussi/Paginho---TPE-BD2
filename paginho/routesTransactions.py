@@ -26,7 +26,7 @@ async def get_transactions(request: GetTransactionSchema, db: Session = Depends(
 async def create_transaction(request: PostTransactionSchema, db: Session = Depends(get_db)):
     if not request.is_valid():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more fields is not valid")
-    if not crud.validate_user(db, request.email, request.password):
+    if not crud.validate_user(db, request.email, request.password, request.cbu):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     cbuTo = None
     try:
