@@ -3,6 +3,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from pgDatabase import User, LinkedEntity, FinancialEntity, Transaction
 from psycopg2.errors import UniqueViolation
 from datetime import datetime
+from typing import Optional
 from hash import hash_password, is_valid
 
 CBU_LENGTH = 22
@@ -67,8 +68,17 @@ def get_user_by_email(db: Session, email: str):
 def get_user_by_cbu(db: Session, cbu: str):
     return db.query(User).join(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
     
-def validate_user(db: Session, email: str, password: str):
-    user = db.query(User).filter(User.email == email).first()
+def validate_user(db: Session, email: str, password: str, cbu: Optional[str] = None):
+    user: None
+
+    if cbu:
+        user = db.query(User).join(LinkedEntity) \
+        .filter((LinkedEntity.cbu == cbu) & (User.email == email)).first()
+        # if user and user.email != email:
+        #     return False
+    else:
+        user = db.query(User).filter(User.email == email).first()
+    
     if user:
         return is_valid(password, user.password)
     return False

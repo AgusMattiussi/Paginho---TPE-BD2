@@ -37,7 +37,7 @@ async def create_linked_account(request: LinkedAccountsPostSchema, db: Session =
     if not crud.validate_user(db, request.email, request.password):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
     
-    # Buscar el dueño del CBU en la tabla User
+    # Buscar el usuario en la tabla User
     user = crud.get_user_by_email(db, request.email)
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
@@ -55,8 +55,8 @@ async def create_linked_account(request: LinkedAccountsPostSchema, db: Session =
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU vinculation limit reached")
     except crud.CBUAlreadyVinculatedException:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU already vinculated")
-    except Exception:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal Server Error")    
+    except Exception as error:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal server error")    
     
     return LinkedAccountDTO(cbu=request.cbu, bank=entity.name)
 
@@ -65,7 +65,7 @@ async def create_linked_account(request: LinkedAccountsPostSchema, db: Session =
 async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: Session = Depends(get_db)):
     if not request.is_valid():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more fields is not valid")
-    if not crud.validate_user(db, request.email, request.password):
+    if not crud.validate_user(db, request.email, request.password, cbu):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
     
     solvedKey = crud.solve_key(db, request.email, request.key)
@@ -106,7 +106,7 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
 async def get_linked_account(cbu: str, request: BasicAuthSchema, db: Session = Depends(get_db)):
     if not request.is_valid():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Email is not valid")
-    if not crud.validate_user(db, request.email, request.password):
+    if not crud.validate_user(db, request.email, request.password, cbu):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
 
     response = {}
