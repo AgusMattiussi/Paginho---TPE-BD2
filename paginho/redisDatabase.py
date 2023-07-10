@@ -22,7 +22,6 @@ def set_cbu(key: str, cbu: str):
     return False
 
         
-#TODO: Delete key
 def delete_key(key: str):
     if redis_client.get(key):
         if redis_client.delete(key):

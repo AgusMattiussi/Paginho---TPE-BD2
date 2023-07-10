@@ -85,14 +85,18 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
     try:
         linkedAccount = crud.modify_linked_entity(db, email=request.email, key=solvedKey, cbu=cbu)
         if linkedAccount is None:
+            redisDatabase.delete_key(solvedKey)
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Linked account not found")
     except crud.AccountVinculationLimitException:
+        redisDatabase.delete_key(solvedKey)
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Account vinculation limit reached")
     except crud.CBUVinculationLimitException:
+        redisDatabase.delete_key(solvedKey)
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU vinculation limit reached")      
     except Exception:
+        redisDatabase.delete_key(solvedKey)
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
-    #TODO: Finally, delete key from redis
+    
     return LinkedAccountDTO(cbu=linkedAccount.cbu, bank=entity.name,  keys=linkedAccount.key)
     
 
