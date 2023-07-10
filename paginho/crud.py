@@ -5,6 +5,8 @@ from psycopg2.errors import UniqueViolation
 from datetime import datetime
 
 CBU_LENGTH = 22
+ACCOUNT_VINCULATION_LIMIT = 10
+FINANCIAL_ENTITY_VINCULATION_LIMIT = 5
 
 class AccountVinculationLimitException(Exception):
     """Raised when the account vinculation limit is reached"""
@@ -25,9 +27,9 @@ class CBUAlreadyVinculatedException(Exception):
 def _account_vinculation_count(db: Session, email: str):
     return db.query(LinkedEntity).join(User).filter(User.email == email).count()
 
-#FIXME: Contar bien las keys (es un array)
 def _cbu_vinculation_count(db: Session, cbu: str):
-    return db.query(LinkedEntity).filter(cbu == LinkedEntity.cbu).count()
+    keys = db.query(LinkedEntity.key).filter(LinkedEntity.cbu == cbu).first()[0]
+    return len(keys)
 
 # Los 3 primeros digitos del CBU identifican a la entidad financiera
 def get_financial_entity_from_cbu(db: Session, cbu: str):
@@ -91,11 +93,11 @@ def get_linked_entities_by_email(db: Session, email:str):
 
 def create_linked_entity(db: Session, email:str, cbu:str, userId:str, entityId:str):
     # Verificar que no supere el limite de vinculaciones por cuenta
-    if(_account_vinculation_count(db, email) >= 10):
+    if(_account_vinculation_count(db, email) >= ACCOUNT_VINCULATION_LIMIT):
         raise AccountVinculationLimitException()
     
     # Verificar que no supere el limite de vinculaciones por entidad financiera
-    if(_cbu_vinculation_count(db, cbu) >= 5):
+    if(_cbu_vinculation_count(db, cbu) >= FINANCIAL_ENTITY_VINCULATION_LIMIT):
         raise CBUVinculationLimitException()
 
     # Insertar nueva tupla en LinkedEntity
@@ -119,12 +121,11 @@ def create_linked_entity(db: Session, email:str, cbu:str, userId:str, entityId:s
 #TODO: Validar casos donde no se encuentre el banco, etc
 def modify_linked_entity(db: Session, email: str, key:str, cbu:str):  
     # Verificar que no supere el limite de vinculaciones por cuenta
-    if(_account_vinculation_count(db, email) >= 10):
+    if(_account_vinculation_count(db, email) >= ACCOUNT_VINCULATION_LIMIT):
         raise AccountVinculationLimitException()
     
-    
     # Verificar que no supere el limite de vinculaciones por entidad financiera
-    if(_cbu_vinculation_count(db, cbu) >= 5):
+    if(_cbu_vinculation_count(db, cbu) >= FINANCIAL_ENTITY_VINCULATION_LIMIT):
         raise CBUVinculationLimitException()
     
     # Buscar la LinkedEntity a modificar con el CBU
