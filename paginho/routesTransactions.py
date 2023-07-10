@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get("/",  status_code=status.HTTP_200_OK)
 async def get_transactions(request: GetTransactionSchema, db: Session = Depends(get_db)):
     if not request.is_valid():
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Email is not valid")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more fields is not valid")
     if not crud.validate_user(db, request.email, request.password):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
     
@@ -22,7 +22,7 @@ async def get_transactions(request: GetTransactionSchema, db: Session = Depends(
     DTOList = []
 
     for transaction in transactionList:
-        DTOList.append(TransactionDTO(cbuFrom=transaction.cbuFrom, cbuTo=transaction.cbuTo, amount=transaction.amount, date=transaction.time))
+        DTOList.append(TransactionDTO(cbuFrom=transaction.cbuFrom, cbuTo=transaction.cbuTo, amount=transaction.amount, date=str(transaction.time)))
     return TransactionListDTO(transactions=DTOList)
     
 
@@ -54,6 +54,6 @@ async def create_transaction(request: PostTransactionSchema, db: Session = Depen
 
     try:
         transaction = crud.create_transaction(db, cbuFrom=request.cbu, cbuTo=cbuTo, amount=request.amount)
-        return TransactionDTO(cbuFrom=transaction.cbuFrom, cbuTo=transaction.cbuTo, amount=transaction.amount, date=transaction.time)
+        return TransactionDTO(cbuFrom=transaction.cbuFrom, cbuTo=transaction.cbuTo, amount=transaction.amount, date=str(transaction.time))
     except Exception:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR,"Internal Server Error")

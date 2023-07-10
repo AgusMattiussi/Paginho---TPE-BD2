@@ -27,7 +27,7 @@ class AccountDTO(BaseModel):
         orm_mode = True
 
 class TransactionDTO(BaseModel):
-    timestamp: Optional[str] = None
+    date: Optional[str] = None
     cbuFrom: Optional[str] = None
     cbuTo: Optional[str] = None
     amount: Optional[float] = None
