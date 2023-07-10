@@ -95,7 +95,7 @@ async def modify_linked_account(cbu: str, request: LinkedAccountsPutSchema, db: 
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "CBU vinculation limit reached")      
     except Exception:
         redisDatabase.delete_key(solvedKey)
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal Server Error")
     
     return LinkedAccountDTO(cbu=linkedAccount.cbu, bank=entity.name,  keys=linkedAccount.key)
     
@@ -114,7 +114,6 @@ async def get_linked_account(cbu: str, request: BasicAuthSchema, db: Session = D
         linkedAccount = crud.get_keys_for_linked_account(db, cbu)
         if linkedAccount:
             response = LinkedAccountDTO(cbu=linkedAccount["cbu"], bank=linkedAccount["name"], keys=linkedAccount["keys"])
-    except Exception as error:
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal Server Error")
     return response
-#TODO: Delete key?

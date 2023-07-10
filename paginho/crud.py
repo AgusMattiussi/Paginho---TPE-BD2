@@ -30,8 +30,10 @@ def _account_vinculation_count(db: Session, email: str):
     return db.query(LinkedEntity).join(User).filter(User.email == email).count()
 
 def _cbu_vinculation_count(db: Session, cbu: str):
-    keys = db.query(LinkedEntity.key).filter(LinkedEntity.cbu == cbu).first()[0]
-    return len(keys)
+    keys = db.query(LinkedEntity.key).filter(LinkedEntity.cbu == cbu).first()
+    if not keys[0]:
+        return 0
+    return len(keys[0])
 
 # Los 3 primeros digitos del CBU identifican a la entidad financiera
 def get_financial_entity_from_cbu(db: Session, cbu: str):
