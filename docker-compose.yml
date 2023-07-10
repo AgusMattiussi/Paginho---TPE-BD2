@@ -1,0 +1,51 @@
+version: '3.1'
+services:
+  redis:
+    container_name: redis_container
+    image: redis
+    ports:
+      - 6379:6379
+
+  postgres_paginho:
+    container_name: postgres_container_paginho
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: paginho
+    # volumes:
+    #   - ./schemaPostgres.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  postgres_financial:
+    container_name: postgres_container_financialEntity
+    image: postgres
+    ports:
+      - 5433:5433
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: financialEntity
+    # volumes:
+    #   - ./financialEntity.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  mongo:
+    container_name: mongo_container
+    image: mongo
+    ports:
+      - 27017:27017
+
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: your_username
+    #   MONGO_INITDB_ROOT_PASSWORD: your_password
+    # volumes:
+    #   - ./schema_mongodb_data.js:/docker-entrypoint-initdb.d/schema_mongodb_data.js
+  
+  # setup:
+  #   build:
+  #     context: .
+  #   volumes:
+  #     - ./setup_db.sh:/app/setup_db.sh
+  #     - ./schema_redis_data.txt:/app/schema_redis_data.txt
+  #   command: bash /app/setup_db.sh
