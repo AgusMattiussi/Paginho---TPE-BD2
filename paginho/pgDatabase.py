@@ -116,7 +116,7 @@ class User(Base):
     email = Column("Email", TEXT, unique=True, nullable=False)
     name = Column("Name", TEXT, nullable=False)
     password = Column("Password", TEXT, nullable=False)
-    cuit = Column("CUIT", CHAR(13), unique=True, nullable=False)
+    cuit = Column("CUIT", VARCHAR(13), unique=True, nullable=False)
     phoneNumber = Column("PhoneNumber", VARCHAR(20), unique=True, nullable=False)
 
 class FinancialEntity(Base):

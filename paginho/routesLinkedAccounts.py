@@ -110,7 +110,7 @@ async def get_linked_account(cbu: str, request: BasicAuthSchema, db: Session = D
     try:
         linkedAccount = crud.get_keys_for_linked_account(db, cbu)
         if linkedAccount:
-            response = LinkedAccountDTO(cbu=linkedAccount["cbu"], bank=linkedAccount["name"], keys=linkedAccount["keys"])
+            response = LinkedAccountDTO(cbu=linkedAccount["cbu"], bank=linkedAccount["name"], keys=linkedAccount["keys"] or [])
     except Exception:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal Server Error")
     return response

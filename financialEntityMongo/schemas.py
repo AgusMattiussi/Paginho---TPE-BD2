@@ -5,9 +5,11 @@ import validators
 class TransactionSchema(BaseModel):
     cbuFrom: str = None
     cbuTo: str = None
-    amount: float = None
+    amount: str = None
 
     def is_valid(self):
+        if not self.cbuFrom or not self.cbuTo or not self.amount:
+            return False
         return  validators.validate_cbu(self.cbuFrom) and \
                 validators.validate_cbu(self.cbuTo) and \
                 validators.validate_amount(self.amount)

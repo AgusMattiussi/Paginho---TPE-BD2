@@ -28,7 +28,7 @@ async def create_transaction(request: TransactionSchema):
         multiple_bank_transaction = 2
 
     try:
-        transactions = crud.create_transaction(get_transaction_collection(), cbuFrom=request.cbuFrom, cbuTo=request.cbuTo, amount=request.amount, multiple_bank_transaction=multiple_bank_transaction)
+        transactions = crud.create_transaction(get_transaction_collection(), cbuFrom=request.cbuFrom, cbuTo=request.cbuTo, amount=float(request.amount), multiple_bank_transaction=multiple_bank_transaction)
         if transactions:
             transaction = transactions[0]
             return TransactionDTO(timestamp=str(transaction['time']), cbuFrom=transaction['cbuFrom'], cbuTo=transaction['cbuTo'], amount=transaction['amount'])

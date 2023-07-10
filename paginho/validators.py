@@ -19,7 +19,7 @@ def validate_phone_number(phoneNumber:str):
         return False
 
 def validate_cuit(cuit:str):
-    cuitPattern = r'^(20|23|27|30|33)([0-9]{9}|-[0-9]{8}-[0-9]{1})$'
+    cuitPattern = r'^(20|23|27|30|33)-[0-9]{8}-[0-9]{1}$'
     return bool(re.match(cuitPattern, cuit))
 
 #TODO: Agregar validador de CBU
@@ -29,22 +29,34 @@ def validate_cbu(cbu:str):
     return bool(re.match(cbuPattern, cbu))
 
 
+def validate_amount(amount:str):
+    floatAmount = 0.0
+    try:  
+        floatAmount = float(amount)
+    except:
+        return False
 
-def validate_amount(amount:float):
-    # Validate float decimals count <= 2
-    return amount > 0 and len(str(amount).split('.')[1] or 0) <= 2
-    
+    if '.' in amount:
+        return floatAmount > 0 and len(amount.split('.')[1]) <= 2
+    else:
+        return floatAmount > 0
     
 def validate_alias_key(key:str):
-    aliasPattern = r'[A-Za-z\.-]{5,50}' # Key length: [5, 50]
+    aliasPattern = r'^[A-Za-z\.-]{5,50}$' # Key length: [5, 50]
     return bool(re.match(aliasPattern, key))
 
 def validate_key_selection(key:str):
-    emailPattern = r'[Ee][Mm][Aa][Ii][Ll]'
-    phonePattern = r'[Pp][Hh][Oo][Nn][Ee]'
-    cuitPattern = r'[Cc][Uu][Ii][Tt]'
+    emailPattern = r'^[Ee][Mm][Aa][Ii][Ll]$'
+    phonePattern = r'^[Pp][Hh][Oo][Nn][Ee]$'
+    cuitPattern = r'^[Cc][Uu][Ii][Tt]$'
     
     return  bool(re.match(emailPattern, key)) or \
             bool(re.match(phonePattern, key)) or \
             bool(re.match(cuitPattern, key)) or \
             validate_alias_key(key)
+
+def validate_password(password:str):
+    return len(password) >= 5 and len(password) <= 50
+
+def validate_name(name:str):
+    return len(name) >= 3 and len(name) <= 255
