@@ -1,4 +1,3 @@
-from fastapi import FastAPI, HTTPException, status
 import redis
 
 REDIS_HOSTNAME="127.0.0.1"

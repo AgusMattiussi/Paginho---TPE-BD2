@@ -2,7 +2,6 @@ from sqlalchemy import create_engine, inspect, Column, ForeignKey, Integer, TEXT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from config import settings
-from sqlalchemy.dialects.postgresql import UUID
 from hash import hash_password
 
 DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOSTNAME}:{settings.DATABASE_PORT}/{settings.POSTGRES_DB}"
@@ -116,7 +115,7 @@ class User(Base):
     email = Column("Email", TEXT, unique=True, nullable=False)
     name = Column("Name", TEXT, nullable=False)
     password = Column("Password", TEXT, nullable=False)
-    cuit = Column("CUIT", CHAR(13), unique=True, nullable=False)
+    cuit = Column("CUIT", VARCHAR(13), unique=True, nullable=False)
     phoneNumber = Column("PhoneNumber", VARCHAR(20), unique=True, nullable=False)
 
 class FinancialEntity(Base):

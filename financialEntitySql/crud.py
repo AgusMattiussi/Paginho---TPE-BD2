@@ -41,7 +41,7 @@ def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float, mul
 
     formattedDatetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     _transaction = Transaction(time= formattedDatetime, cbuFrom=cbuFrom, cbuTo=cbuTo, amount=amount)
-
+ 
     try:
         match multiple_bank_transaction:
                 case 0:
@@ -51,7 +51,8 @@ def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float, mul
                     modify_balance(cbuFrom, -amount, db)
                 case 2:
                     modify_balance(cbuTo, amount, db) 
-    except NotEnoughFundsException:
+    except Exception:
+        raise 
 
     try:
         db.add(_transaction)

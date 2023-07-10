@@ -1,11 +1,11 @@
-from fastapi import APIRouter, HTTPException, Path, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends
 from pgDatabase import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from psycopg2.errors import UniqueViolation
 from schemas import GetUserSchema, UserDTO, PostUserSchema
-import crud
 from utils import normalizePhoneNumber
+
+import crud
 
 CBU_LENGTH = 22
 

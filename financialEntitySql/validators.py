@@ -1,5 +1,4 @@
-import re
-import phonenumbers
+import re, phonenumbers
 
 _MAX_EMAIL_LENGTH = 254
 _MAX_KEY_LENGTH = 50
@@ -19,7 +18,7 @@ def validate_phone_number(phoneNumber:str):
         return False
 
 def validate_cuit(cuit:str):
-    cuitPattern = r'^(20|23|27|30|33)([0-9]{9}|-[0-9]{8}-[0-9]{1})$'
+    cuitPattern = r'^(20|23|27|30|33)-[0-9]{8}-[0-9]{1}$'
     return bool(re.match(cuitPattern, cuit))
 
 def validate_cbu(cbu:str):
@@ -29,9 +28,17 @@ def validate_cbu(cbu:str):
 
 
 
-def validate_amount(amount:float):
-    # Validate float decimals count <= 2
-    return amount > 0 and len(str(amount).split('.')[1] or 0) <= 2
+def validate_amount(amount:str):
+    floatAmount = 0.0
+    try:  
+        floatAmount = float(amount)
+    except:
+        return False
+
+    if '.' in amount:
+        return floatAmount > 0 and len(amount.split('.')[1]) <= 2
+    else:
+        return floatAmount > 0
     
     
 def validate_alias_key(key:str):

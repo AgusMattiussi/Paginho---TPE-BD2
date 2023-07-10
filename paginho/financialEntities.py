@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from pgDatabase import FinancialEntity
 from fastapi import status, HTTPException
+
 import crud
 import requests
-import json
 
 #TODO: Sacarlo de un archivo
 _BANK_SERVERS = {
@@ -16,15 +16,6 @@ _HTTP_PROTOCOL = "http://"
 class UnregisteredEntityException(Exception):
     """Raised when the entity's server is not registered"""
     pass
-
-# class fromTransactionException(Exception):
-#     """Raised when the transaction 'from' couldn't be made"""
-#     pass
-
-# class toTransactionException(Exception):
-#     """Raised when the transaction 'to' couldn't be made"""
-#     pass
-
 
 def _generate_payload(cbuFrom: str, cbuTo: str, amount: float):
     return {
@@ -44,19 +35,23 @@ def _single_bank_transaction(entity: FinancialEntity, cbuFrom: str, cbuTo: str, 
 
     result = requests.post(url, json=payload, timeout=10000)
     
-    result.raise_for_status()
+    try:
+        result.raise_for_status()
+    except Exception:
+        raise HTTPException(result.status_code)
+
     return result.status_code == status.HTTP_201_CREATED or result.status_code == status.HTTP_200_OK
 
 
 def _multiple_bank_transaction(entityFrom: FinancialEntity, entityTo: FinancialEntity, cbuFrom: str, cbuTo: str, amount: float):
     try:
         _single_bank_transaction(entityFrom, cbuFrom, cbuTo, amount)
-    except HTTPException as e:
+    except Exception:
         raise
     
     try:
         _single_bank_transaction(entityTo, cbuFrom, cbuTo, amount)
-    except HTTPException as e:
+    except Exception:
         # Rollback first transaction
         _single_bank_transaction(entityFrom, cbuTo, cbuFrom, amount)
         raise
@@ -70,11 +65,11 @@ def bank_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
     if entityFrom.id == entityTo.id:
         try:
             _single_bank_transaction(entityFrom, cbuFrom, cbuTo, amount)
-        except HTTPException as e:
+        except Exception:
             raise
     else:
         try:
             _multiple_bank_transaction(entityFrom, entityTo, cbuFrom, cbuTo, amount)
-        except HTTPException as e:
+        except Exception:
             raise
     

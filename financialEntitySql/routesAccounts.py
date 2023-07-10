@@ -2,10 +2,9 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi import Depends
 from pgDatabase import get_db
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from schemas import AccountDTO
-import crud
-import validators
+
+import crud, validators
 
 CBU_LENGTH = 22
 

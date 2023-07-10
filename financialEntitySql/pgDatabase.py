@@ -1,8 +1,7 @@
-from sqlalchemy import create_engine, inspect, Column, ForeignKey, Integer, TEXT, CHAR, VARCHAR, TIMESTAMP, DECIMAL, ARRAY
+from sqlalchemy import create_engine, inspect, Column, Integer, TEXT, CHAR, VARCHAR, TIMESTAMP, DECIMAL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from config import settings
-from sqlalchemy.dialects.postgresql import UUID
 from hash import hash_password
 
 

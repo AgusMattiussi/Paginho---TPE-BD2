@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi import Depends
 from pgDatabase import get_db
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from schemas import BasicAuthSchema, LinkedAccountsPostSchema, LinkedAccountsPutSchema, LinkedAccountDTO, LinkedAccountListDTO
+
 import crud, redisDatabase
 
 CBU_LENGTH = 22
@@ -110,7 +110,7 @@ async def get_linked_account(cbu: str, request: BasicAuthSchema, db: Session = D
     try:
         linkedAccount = crud.get_keys_for_linked_account(db, cbu)
         if linkedAccount:
-            response = LinkedAccountDTO(cbu=linkedAccount["cbu"], bank=linkedAccount["name"], keys=linkedAccount["keys"])
+            response = LinkedAccountDTO(cbu=linkedAccount["cbu"], bank=linkedAccount["name"], keys=linkedAccount["keys"] or [])
     except Exception:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Internal Server Error")
     return response

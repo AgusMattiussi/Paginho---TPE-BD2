@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import Depends
 from pgDatabase import get_db
 from sqlalchemy.orm import Session
 from schemas import PostTransactionSchema, GetTransactionSchema, TransactionDTO, TransactionListDTO
@@ -44,7 +44,7 @@ async def create_transaction(request: PostTransactionSchema, db: Session = Depen
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Key not found")
     
     try:
-        financialEntities.bank_transaction(db, request.cbu, cbuTo, request.amount)
+        financialEntities.bank_transaction(db, request.cbu, cbuTo, float(request.amount))
     except financialEntities.UnregisteredEntityException:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "One of the financial entities is unreachable")
     except HTTPException as e:

@@ -2,7 +2,7 @@ from pgDatabase import get_db
 from sqlalchemy.orm import Session
 from schemas import TransactionSchema, TransactionDTO
 from fastapi import APIRouter, HTTPException, status, Depends
-from sqlalchemy.exc import SQLAlchemyError
+
 import crud
 
 router = APIRouter()
@@ -19,7 +19,7 @@ async def create_transaction(request: TransactionSchema, db: Session = Depends(g
     if not cbuFromValidation and not cbuToValidation:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Account does not belong to this bank")
 
-    multiple_bank_transaction = 0 # Hacer un enum
+    multiple_bank_transaction = 0 # TODO: Hacer un enum
 
     if cbuFromValidation and not cbuToValidation: # Resto plata al cbuTo 
         multiple_bank_transaction = 1
@@ -28,7 +28,7 @@ async def create_transaction(request: TransactionSchema, db: Session = Depends(g
         multiple_bank_transaction = 2
 
     try:
-        transaction = crud.create_transaction(db, cbuFrom=request.cbuFrom, cbuTo=request.cbuTo, amount=request.amount, multiple_bank_transaction=multiple_bank_transaction)
+        transaction = crud.create_transaction(db, cbuFrom=request.cbuFrom, cbuTo=request.cbuTo, amount=float(request.amount), multiple_bank_transaction=multiple_bank_transaction)
         if transaction:
             return TransactionDTO(timestamp=str(transaction.time), cbuFrom=transaction.cbuFrom, cbuTo=transaction.cbuTo, amount=transaction.amount)
         else:
