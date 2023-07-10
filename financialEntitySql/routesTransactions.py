@@ -11,13 +11,13 @@ router = APIRouter()
 @router.post("/", status_code= status.HTTP_201_CREATED)
 async def create_transaction(request: TransactionSchema, db: Session = Depends(get_db)):
     if not request.is_valid():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="One or more fields is not valid")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "One or more fields is not valid")
 
     cbuFromValidation = crud.validate_account(request.cbuFrom, db)
     cbuToValidation = crud.validate_account(request.cbuTo, db)
 
     if not cbuFromValidation and not cbuToValidation:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account does not belong to this bank")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Account does not belong to this bank")
 
     multiple_bank_transaction = 0 # Hacer un enum
 
@@ -32,9 +32,11 @@ async def create_transaction(request: TransactionSchema, db: Session = Depends(g
         if transaction:
             return TransactionDTO(timestamp=str(transaction.time), cbuFrom=transaction.cbuFrom, cbuTo=transaction.cbuTo, amount=transaction.amount)
         else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Error creating transaction")
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Error creating transaction")
     except crud.NotEnoughFundsException:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Account does not have enough funds to make the transaction")
-    except SQLAlchemyError:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
     
