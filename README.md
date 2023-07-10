@@ -33,7 +33,8 @@ cd paginho
 uvicorn main:app --reload --port 8000
 ```
 
-Para acceder a la documentación de swagger, ir a `http://localhost:8000/docs` en el navegador.
+Para acceder a la documentación de swagger, ir a `http://localhost:8000/docs` en el navegador. <br/>
+En caso de querer modificar los parámetros de la base de datos, puede hacerse desde el archivo `.env`
 
 <p>&nbsp;</p>
 
@@ -47,7 +48,8 @@ cd financialEntitySql
 uvicorn main:app --reload --port 8001
 ```
 
-Para acceder a la documentación de swagger, ir a `http://localhost:8001/docs` en el navegador.
+Para acceder a la documentación de swagger, ir a `http://localhost:8001/docs` en el navegador. <br/>
+En caso de querer modificar los parámetros de la base de datos, puede hacerse desde el archivo `.env`
 
 <p>&nbsp;</p>
 
@@ -61,12 +63,17 @@ cd financialEntityMongo
 uvicorn main:app --reload --port 8002
 ```
 
-Para acceder a la documentación de swagger, ir a `http://localhost:8002/docs` en el navegador.
+Para acceder a la documentación de swagger, ir a `http://localhost:8002/docs` en el navegador. <br/>
+En caso de querer modificar los parámetros de la base de datos, puede hacerse desde el archivo `.env`
 
 <p>&nbsp;</p>
 
 ## Autores
 
-- Larroudé Alvárez, Santiago
-- Mattiussi, Agustín Hernán
-- Sasso, Julían
+- 60460 - Larroudé Alvarez, Santiago Andrés
+- 61361 - Mattiussi, Agustín Hernán
+- 61535 - Sasso, Julían Martín
+
+## Documentación Adicional
+
+[Trabajo Práctico Final BD2 - 2023 1C (Paginho), Notion.so](https://www.notion.so/Trabajo-Pr-ctico-Final-BD2-2023-1C-Paginho-98b3855562a8427db6a494828b7c9422)
