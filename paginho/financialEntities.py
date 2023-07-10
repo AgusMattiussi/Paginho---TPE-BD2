@@ -5,7 +5,7 @@ from fastapi import status, HTTPException
 import crud
 import requests
 
-#TODO: Sacarlo de un archivo
+
 _BANK_SERVERS = {
     "000": ["127.0.0.1", "8001"],
     "001": ["127.0.0.1", "8002"]

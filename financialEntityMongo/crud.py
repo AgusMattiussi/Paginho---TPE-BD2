@@ -1,5 +1,6 @@
 from mongoDatabase import bankAccounts_serializer, Transaction, transactions_serializer, get_bankAccount_collection
 from datetime import datetime
+from utils import TransactionTypes
 
 class NotEnoughFundsException(Exception):
     """Raised when the account doesn't have enough funds to make the transaction"""
@@ -24,7 +25,7 @@ def validate_transaction(cbu: str, amount: float, collection):
 def create_transaction(collection, cbuFrom: str, cbuTo: str, amount: float, multiple_bank_transaction: int):
     bankAccountCollection = get_bankAccount_collection()
 
-    if multiple_bank_transaction != 2:
+    if multiple_bank_transaction != TransactionTypes.ADD_FUNDS:
         if not validate_transaction(cbuFrom, amount, bankAccountCollection):
             raise NotEnoughFundsException()
     
@@ -35,12 +36,12 @@ def create_transaction(collection, cbuFrom: str, cbuTo: str, amount: float, mult
     transaction = transactions_serializer(collection.find({"_id": _id.inserted_id}))
 
     match multiple_bank_transaction:
-            case 0:
+            case TransactionTypes.INTERNAL:
                 modify_balance(cbuFrom, -amount, bankAccountCollection)
                 modify_balance(cbuTo, amount, bankAccountCollection)
-            case 1:
+            case TransactionTypes.SUBSTRACT_FUNDS:
                 modify_balance(cbuFrom, -amount, bankAccountCollection)
-            case 2:
+            case TransactionTypes.ADD_FUNDS:
                 modify_balance(cbuTo, amount, bankAccountCollection)
 
     return transaction

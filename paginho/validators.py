@@ -21,7 +21,7 @@ def validate_cuit(cuit:str):
     cuitPattern = r'^(20|23|27|30|33)-[0-9]{8}-[0-9]{1}$'
     return bool(re.match(cuitPattern, cuit))
 
-#TODO: Agregar validador de CBU
+
 def validate_cbu(cbu:str):
     # Expresión regular para validar el formato del CBU
     cbuPattern = r'^\d{22}$'

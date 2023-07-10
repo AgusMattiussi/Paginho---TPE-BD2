@@ -43,7 +43,6 @@ async def create_user(request: PostUserSchema, db: Session = Depends(get_db)):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "An user with this information already exists")
     raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-#TODO: DELETE /users?
 
 
 

@@ -29,10 +29,10 @@ class AccountDTO(BaseModel):
         orm_mode = True
 
 class TransactionDTO(BaseModel):
-    date: Optional[str] = None
-    cbuFrom: Optional[str] = None
-    cbuTo: Optional[str] = None
-    amount: Optional[float] = None
+    date: str = None
+    cbuFrom: str = None
+    cbuTo: str = None
+    amount: float = None
 
     class Config:
         orm_mode = True

@@ -128,7 +128,6 @@ def create_linked_entity(db: Session, email:str, cbu:str, userId:str, entityId:s
 
 
 
-#TODO: Validar casos donde no se encuentre el banco, etc
 def modify_linked_entity(db: Session, email: str, key:str, cbu:str):  
     # Verificar que no supere el limite de vinculaciones por cuenta
     if(_account_vinculation_count(db, email) >= ACCOUNT_VINCULATION_LIMIT):
@@ -180,7 +179,6 @@ def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
         raise
     return _transaction
 
-#TODO: Validar not found, etc
 def get_transactions_by_email(db: Session, email: str, limit: int):
     return db.query(Transaction) \
             .join(LinkedEntity, (Transaction.cbuFrom == LinkedEntity.cbu) | (Transaction.cbuTo == LinkedEntity.cbu)) \

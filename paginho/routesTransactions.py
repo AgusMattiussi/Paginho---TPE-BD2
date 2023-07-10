@@ -10,7 +10,6 @@ import crud, financialEntities
 router = APIRouter()
 
 # GET /transactions
-# TODO:
 @router.get("/",  status_code=status.HTTP_200_OK)
 async def get_transactions(request: GetTransactionSchema, db: Session = Depends(get_db)):
     if not request.is_valid():
@@ -27,7 +26,6 @@ async def get_transactions(request: GetTransactionSchema, db: Session = Depends(
     
 
 # POST /transactions
-#TODO: Validar parametros
 @router.post("/",  status_code=status.HTTP_201_CREATED)
 async def create_transaction(request: PostTransactionSchema, db: Session = Depends(get_db)):
     if not request.is_valid():

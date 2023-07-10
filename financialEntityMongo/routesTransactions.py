@@ -2,6 +2,7 @@ from mongoDatabase import get_bankAccount_collection, get_transaction_collection
 from schemas import TransactionSchema, TransactionDTO
 from fastapi import APIRouter, HTTPException, status
 from pymongo.errors import PyMongoError
+from utils import TransactionTypes
 
 import crud
 
@@ -20,13 +21,13 @@ async def create_transaction(request: TransactionSchema):
     if not cbuFromValidation and not cbuToValidation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account does not belong to this bank")
 
-    multiple_bank_transaction = 0 # Hacer un enum
+    multiple_bank_transaction = TransactionTypes.INTERNAL
 
     if cbuFromValidation and not cbuToValidation: # Resto plata al cbuTo 
-        multiple_bank_transaction = 1
+        multiple_bank_transaction = TransactionTypes.SUBSTRACT_FUNDS
 
     if not cbuFromValidation and cbuToValidation: # Sumo plata al cbuTo
-        multiple_bank_transaction = 2
+        multiple_bank_transaction = TransactionTypes.ADD_FUNDS
 
     try:
         transactions = crud.create_transaction(get_transaction_collection(), cbuFrom=request.cbuFrom, cbuTo=request.cbuTo, amount=float(request.amount), multiple_bank_transaction=multiple_bank_transaction)

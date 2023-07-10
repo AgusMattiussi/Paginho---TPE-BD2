@@ -4,6 +4,7 @@ from pgDatabase import BankAccount, Transaction
 from datetime import datetime
 from decimal import Decimal
 from schemas import TransactionDTO
+from utils import TransactionTypes
 
 class NotEnoughFundsException(Exception):
     """Raised when the account doesn't have enough funds to make the transaction"""
@@ -35,7 +36,7 @@ def validate_transaction(cbu: str, amount: float, db: Session):
 
 # Transactions
 def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float, multiple_bank_transaction: int):
-    if multiple_bank_transaction != 2:
+    if multiple_bank_transaction != TransactionTypes.ADD_FUNDS:
         if not validate_transaction(cbuFrom, amount, db):
             raise NotEnoughFundsException()
 
@@ -44,12 +45,12 @@ def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float, mul
  
     try:
         match multiple_bank_transaction:
-                case 0:
+                case TransactionTypes.INTERNAL:
                     modify_balance(cbuFrom, -amount, db)
                     modify_balance(cbuTo, amount, db)
-                case 1:
+                case TransactionTypes.SUBSTRACT_FUNDS:
                     modify_balance(cbuFrom, -amount, db)
-                case 2:
+                case TransactionTypes.ADD_FUNDS:
                     modify_balance(cbuTo, amount, db) 
     except Exception:
         raise 
@@ -61,4 +62,4 @@ def create_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float, mul
     except SQLAlchemyError:
         raise   
 
-    return TransactionDTO(date=str(_transaction.time), cbuFrom=_transaction.cbuFrom, cbuTo=_transaction.cbuTo, amount=_transaction.amount)
+    return _transaction
