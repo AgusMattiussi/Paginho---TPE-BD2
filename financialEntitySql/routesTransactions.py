@@ -2,7 +2,7 @@ from pgDatabase import get_db
 from sqlalchemy.orm import Session
 from schemas import TransactionSchema, TransactionDTO
 from fastapi import APIRouter, HTTPException, status, Depends
-from sqlalchemy.exc import SQLAlchemyError
+
 import crud
 
 router = APIRouter()

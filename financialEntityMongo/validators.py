@@ -1,9 +1,6 @@
-import re
-import phonenumbers
+import re, phonenumbers
 
 _MAX_EMAIL_LENGTH = 254
-_MAX_KEY_LENGTH = 50
-_MIN_KEY_LENGTH = 5
 _ARGENTINA_COUNTRY_CODE = "AR"
 
 

@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
+
 import validators
 
 class TransactionSchema(BaseModel):

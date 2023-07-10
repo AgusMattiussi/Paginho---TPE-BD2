@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from pgDatabase import FinancialEntity
 from fastapi import status, HTTPException
+
 import crud
 import requests
 
@@ -15,15 +16,6 @@ _HTTP_PROTOCOL = "http://"
 class UnregisteredEntityException(Exception):
     """Raised when the entity's server is not registered"""
     pass
-
-# class fromTransactionException(Exception):
-#     """Raised when the transaction 'from' couldn't be made"""
-#     pass
-
-# class toTransactionException(Exception):
-#     """Raised when the transaction 'to' couldn't be made"""
-#     pass
-
 
 def _generate_payload(cbuFrom: str, cbuTo: str, amount: float):
     return {

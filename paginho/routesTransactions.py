@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import Depends
 from pgDatabase import get_db
 from sqlalchemy.orm import Session
 from schemas import PostTransactionSchema, GetTransactionSchema, TransactionDTO, TransactionListDTO

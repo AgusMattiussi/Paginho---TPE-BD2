@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi import Depends
 from pgDatabase import get_db
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from schemas import BasicAuthSchema, LinkedAccountsPostSchema, LinkedAccountsPutSchema, LinkedAccountDTO, LinkedAccountListDTO
+
 import crud, redisDatabase
 
 CBU_LENGTH = 22
