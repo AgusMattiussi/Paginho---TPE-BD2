@@ -103,7 +103,7 @@ class GetTransactionSchema(BaseModel): # GET /transactions
     limit: int = 10
 
     def is_valid(self):
-        return validators.validate_email(self.email)
+        return self.limit > 0 and validators.validate_email(self.email)
 
     class Config:
         orm_mode = True
@@ -121,6 +121,21 @@ class PostTransactionSchema(BaseModel): # POST /transactions
                 validators.validate_cbu(self.cbu) and \
                 validators.validate_alias_key(self.key) and \
                 validators.validate_amount(self.amount)
+    
+    class Config:
+        orm_mode = True
+
+class TransactionDTO(BaseModel):
+    cbuFrom: str = None
+    cbuTo: str = None
+    amount: float = None
+    date: str = None
+
+    class Config:
+        orm_mode = True
+
+class TransactionListDTO(BaseModel):
+    transactions: Optional[List[TransactionDTO]] = []
     
     class Config:
         orm_mode = True
