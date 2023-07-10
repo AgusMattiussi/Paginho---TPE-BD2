@@ -66,7 +66,7 @@ def _multiple_bank_transaction(entityFrom: FinancialEntity, entityTo: FinancialE
 def bank_transaction(db: Session, cbuFrom: str, cbuTo: str, amount: float):
     entityFrom = crud.get_financial_entity_from_cbu(db, cbuFrom)
     entityTo = crud.get_financial_entity_from_cbu(db, cbuTo)
-    
+
     if entityFrom.id == entityTo.id:
         try:
             _single_bank_transaction(entityFrom, cbuFrom, cbuTo, amount)

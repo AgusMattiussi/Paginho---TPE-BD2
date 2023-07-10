@@ -13,15 +13,19 @@ async def create_transaction(request: TransactionSchema):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="One or more fields is not valid")
 
     bankAccountCollection = get_bankAccount_collection()
+    cbuFromValidation = crud.validate_account(request.cbuFrom, bankAccountCollection)
+    cbuToValidation = crud.validate_account(request.cbuTo, bankAccountCollection)
 
-    if not crud.validate_account(request.cbuFrom, bankAccountCollection):
+    if not cbuFromValidation and not cbuToValidation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account does not belong to this bank")
 
-    multiple_bank_transaction = False
+    multiple_bank_transaction = 0 # Hacer un enum
 
-    if not crud.validate_account(request.cbuTo, bankAccountCollection):
-        #TODO: llamar a paginhoAPI para hacer la transaccion
-        multiple_bank_transaction = True
+    if cbuFromValidation and not cbuToValidation: # Resto plata al cbuTo 
+        multiple_bank_transaction = 1
+
+    if not cbuFromValidation and cbuToValidation: # Sumo plata al cbuTo
+        multiple_bank_transaction = 2
 
     try:
         transactions = crud.create_transaction(get_transaction_collection(), cbuFrom=request.cbuFrom, cbuTo=request.cbuTo, amount=request.amount, multiple_bank_transaction=multiple_bank_transaction)

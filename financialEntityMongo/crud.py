@@ -21,11 +21,12 @@ def validate_transaction(cbu: str, amount: float, collection):
     return balance >= amount
 
 # Transactions
-def create_transaction(collection, cbuFrom: str, cbuTo: str, amount: float, multiple_bank_transaction: bool):
+def create_transaction(collection, cbuFrom: str, cbuTo: str, amount: float, multiple_bank_transaction: int):
     bankAccountCollection = get_bankAccount_collection()
 
-    if not validate_transaction(cbuFrom, amount, bankAccountCollection):
-        raise NotEnoughFundsException()
+    if multiple_bank_transaction != 2:
+        if not validate_transaction(cbuFrom, amount, bankAccountCollection):
+            raise NotEnoughFundsException()
     
     formattedDatetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     _transaction = Transaction(time= formattedDatetime, cbuFrom=cbuFrom, cbuTo=cbuTo, amount=amount)
@@ -33,9 +34,13 @@ def create_transaction(collection, cbuFrom: str, cbuTo: str, amount: float, mult
     _id = collection.insert_one(dict(_transaction))
     transaction = transactions_serializer(collection.find({"_id": _id.inserted_id}))
 
-    if not multiple_bank_transaction:
-        modify_balance(cbuTo, amount, bankAccountCollection)
-
-    modify_balance(cbuFrom, -amount, bankAccountCollection)
+    match multiple_bank_transaction:
+            case 0:
+                modify_balance(cbuFrom, -amount, bankAccountCollection)
+                modify_balance(cbuTo, amount, bankAccountCollection)
+            case 1:
+                modify_balance(cbuFrom, -amount, bankAccountCollection)
+            case 2:
+                modify_balance(cbuTo, amount, bankAccountCollection)
 
     return transaction
