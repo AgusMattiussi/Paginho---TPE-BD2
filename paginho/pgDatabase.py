@@ -126,7 +126,7 @@ class LinkedEntity(Base):
     __tablename__ = 'LinkedEntity'
     cbu = Column("CBU", CHAR(22), primary_key=True, nullable=False)
     key = Column("Key", ARRAY(TEXT))
-    entityId = Column("EntityID", CHAR(3), ForeignKey("FinancialEntity.EntityID"), nullable=False)
+    entityId = Column("EntityID", CHAR(3), ForeignKey("FinancialEntity.EntityID", ondelete="CASCADE"), nullable=False)
     userId = Column("UserID", Integer, ForeignKey("User.UserID"), nullable=False)
 
 class Transaction(Base):

@@ -28,8 +28,8 @@ def delete_key(key: str):
         raise redis.RedisError
     return False
 
-def get_all_keys():
+def _get_all_keys():
     return redis_client.keys()
 
-def delete_all_keys():
+def _delete_all_keys():
     return redis_client.flushall()

@@ -39,7 +39,7 @@ def _cbu_vinculation_count(db: Session, cbu: str):
 def get_financial_entity_from_cbu(db: Session, cbu: str):
     return db.query(FinancialEntity).filter(FinancialEntity.id == cbu[:3]).first()
 
-def _get_linked_entity(db: Session, cbu: str):
+def get_linked_entity(db: Session, cbu: str):
     return db.query(LinkedEntity).filter(LinkedEntity.cbu == cbu).first()
 
 # User 
@@ -95,7 +95,7 @@ def get_linked_entities_by_email(db: Session, email:str):
         entity_dict = {
             "cbu": row[0],
             "name": row[1],
-            "keys": row[2]
+            "keys": row[2] or []
         }
         out.append(entity_dict)
 
@@ -138,7 +138,7 @@ def modify_linked_entity(db: Session, email: str, key:str, cbu:str):
         raise CBUVinculationLimitException()
     
     # Buscar la LinkedEntity a modificar con el CBU
-    linkedEntity = _get_linked_entity(db, cbu)
+    linkedEntity = get_linked_entity(db, cbu)
     if not linkedEntity:
         return None
 
@@ -156,6 +156,42 @@ def modify_linked_entity(db: Session, email: str, key:str, cbu:str):
         raise error
     
     return linkedEntity
+
+def delete_linked_entity(db: Session, cbu:str):
+    # Buscar la LinkedEntity a eliminar con el CBU
+    linkedEntity = get_linked_entity(db, cbu)
+    if not linkedEntity:
+        return False
+    
+    # Eliminar la tupla
+    try:
+        db.delete(linkedEntity)
+        db.commit()
+    except SQLAlchemyError as error:
+        raise error
+    return True
+
+
+def delete_key_from_linked_entity(db: Session, key:str, cbu:str):
+    # Buscar la LinkedEntity a modificar con el CBU
+    linkedEntity = get_linked_entity(db, cbu)
+    if not linkedEntity:
+        return None
+
+    # Eliminar la key de la lista
+    if(linkedEntity.key is None or key not in linkedEntity.key):
+        return None
+    else:
+        linkedEntity.key.remove(key)
+
+    # Actualizar la tupla
+    try:
+        db.query(LinkedEntity).filter(LinkedEntity.cbu == cbu).update({'key': linkedEntity.key})
+        db.commit()
+    except SQLAlchemyError as error:
+        raise error
+    return linkedEntity
+    
 
 def get_keys_for_linked_account(db: Session, cbu:str):  
     result = db.query(FinancialEntity.name, LinkedEntity.key) \
